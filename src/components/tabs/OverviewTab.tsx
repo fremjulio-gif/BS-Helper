@@ -15,6 +15,7 @@ import { CoachMascot } from '../ui/CoachMascot';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TrophyCounter } from '../ui/TrophyCounter';
 import { ProgressBar } from '../ui/ProgressBar';
+import { TabHeader } from '../ui/TabHeader';
 import { triggerTrophyConfetti } from '../ui/Confetti';
 import { StaggerItem } from '../motion/Stagger';
 import { useSettings } from '@/lib/settings-context';
@@ -33,6 +34,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Compass,
+  BarChart3,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -108,15 +110,33 @@ export function OverviewTab({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Unified Tab Header */}
+      <TabHeader
+        icon={BarChart3}
+        title="Vue d'ensemble"
+        subtitle="Performances globales, plan de session et progression en direct"
+        badge={`${profile.trophies.toLocaleString()} 🏆`}
+        rightAction={
+          <button
+            onClick={handleHeroCelebration}
+            title="Célébrer !"
+            className="brawl-btn brawl-btn-cyan min-h-[44px] px-3.5 flex items-center gap-2"
+          >
+            <PartyPopper className="w-4 h-4 text-[#070b16]" />
+            <span className="hidden sm:inline text-xs font-cartoon text-[#070b16]">Célébrer</span>
+          </button>
+        }
+      />
+
       {/* Tilt Warning Banner (if active) */}
       {lossReport?.tiltAlertActive && (
         <m.div
           animate={!reduceMotion ? { x: [-3, 3, -3, 3, 0] } : undefined}
           transition={{ duration: 0.5 }}
-          className="brawl-card p-4 bg-gradient-to-r from-[#45141d] to-[#250d14] border-3 border-[#ef4444] shadow-[0_4px_0_#070b16] flex items-center justify-between gap-4"
+          className="brawl-card p-4 sm:p-5 bg-gradient-to-r from-[#45141d] to-[#250d14] border-3 border-[#ef4444] shadow-[0_4px_0_#070b16] flex items-center justify-between gap-4"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             <CoachMascot mood="tilt" size={48} />
             <div>
               <div className="flex items-center gap-1.5">
@@ -125,7 +145,7 @@ export function OverviewTab({
                   Alerte Tilt Active
                 </span>
               </div>
-              <p className="text-xs text-slate-200 mt-0.5 font-bold">
+              <p className="text-xs sm:text-sm text-slate-200 mt-0.5 font-bold">
                 {lossReport.cooldownMessage ||
                   `${lossReport.consecutiveLosses} défaites consécutives. Prenez 15 minutes de pause pour réinitialiser le rythme !`}
               </p>
@@ -155,17 +175,17 @@ export function OverviewTab({
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-lg text-[10px] font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                <span className="px-2 py-0.5 rounded-lg text-xs font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
                   Coach Bitz
                 </span>
-                <span className="text-xs font-bold text-yellow-300">
+                <span className="text-xs sm:text-sm font-bold text-yellow-300">
                   {battleSummary.winRate >= 60 ? '🔥 Session en feu' : '🎯 Objectif Trophées'}
                 </span>
               </div>
               <h3 className="font-cartoon text-lg sm:text-2xl text-white mt-1 text-stroke-sm">
                 {topTip ? topTip.title : `Bienvenue, ${profile.name} !`}
               </h3>
-              <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-xl font-medium leading-relaxed">
+              <p className="text-sm text-slate-200 mt-1 max-w-xl font-medium leading-relaxed">
                 {topTip
                   ? topTip.action
                   : `Tu as ${profile.trophies.toLocaleString()} trophées. Consulte tes opportunités de rush pour continuer de monter !`}
@@ -183,13 +203,6 @@ export function OverviewTab({
             >
               Parler à Bitz
             </Button>
-            <button
-              onClick={handleHeroCelebration}
-              title="Célébrer !"
-              className="brawl-btn brawl-btn-cyan min-h-[44px] min-w-[44px] px-3"
-            >
-              <PartyPopper className="w-5 h-5 text-[#070b16]" />
-            </button>
           </div>
         </div>
       </div>
@@ -208,7 +221,7 @@ export function OverviewTab({
           </div>
           <div className="mt-3">
             <TrophyCounter value={profile.trophies} size="md" showIcon={false} />
-            <span className="text-[11px] font-bold text-yellow-400/90 block mt-1">
+            <span className="text-xs font-bold text-yellow-400/90 block mt-1 tabular-nums">
               Record : {profile.highestTrophies.toLocaleString()} 🏆
             </span>
           </div>
@@ -230,13 +243,13 @@ export function OverviewTab({
           </div>
           <div className="mt-3">
             <span
-              className={`font-cartoon text-2xl sm:text-3xl text-stroke-sm leading-none ${
+              className={`font-cartoon text-2xl sm:text-3xl text-stroke-sm leading-none tabular-nums ${
                 battleSummary.winRate >= 55 ? 'text-[#4ade80]' : 'text-[#f87171]'
               }`}
             >
               {battleSummary.winRate}%
             </span>
-            <span className="text-[11px] font-bold text-slate-300 block mt-1">
+            <span className="text-xs font-bold text-slate-300 block mt-1 tabular-nums">
               {battleSummary.victories}V - {battleSummary.defeats}D ({battleSummary.trophyDelta > 0 ? '+' : ''}
               {battleSummary.trophyDelta} tr)
             </span>
@@ -254,10 +267,10 @@ export function OverviewTab({
             </div>
           </div>
           <div className="mt-3">
-            <span className="font-cartoon text-2xl sm:text-3xl text-white text-stroke-sm leading-none">
+            <span className="font-cartoon text-2xl sm:text-3xl text-white text-stroke-sm leading-none tabular-nums">
               {profile['3vs3Victories'].toLocaleString()}
             </span>
-            <span className="text-[11px] font-bold text-[#00d9ff] block mt-1">
+            <span className="text-xs font-bold text-[#00d9ff] block mt-1 tabular-nums">
               Solo: {profile.soloVictories} | Duo: {profile.duoVictories}
             </span>
           </div>
@@ -277,7 +290,7 @@ export function OverviewTab({
             <span className="font-cartoon text-xl sm:text-2xl text-[#c084fc] text-stroke-sm leading-none truncate block">
               {profile.rankedRankName || 'DIAMOND I'}
             </span>
-            <span className="text-[11px] font-bold text-[#c084fc] block mt-1">
+            <span className="text-xs font-bold text-[#c084fc] block mt-1 tabular-nums">
               {profile.rankedElo ? `${profile.rankedElo} Elo` : 'En compétition'}
             </span>
           </div>

@@ -6,6 +6,7 @@ import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { ProgressBar } from '../ui/ProgressBar';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
+import { TabHeader } from '../ui/TabHeader';
 import { Trophy, Zap, ArrowUpRight, ShieldCheck, Search } from 'lucide-react';
 
 interface TrophiesTabProps {
@@ -35,45 +36,38 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
     });
 
   return (
-    <div className="space-y-6">
-      {/* Header section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-cartoon text-white flex items-center gap-2.5 text-stroke-sm">
-            <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
-              <Trophy className="w-5 h-5 fill-[#070b16]" />
-            </div>
-            Accélérateur de Trophées
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-            Repérez instantanément les Brawlers les plus rentables à monter sans résistance.
-          </p>
-        </div>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Unified Tab Header */}
+      <TabHeader
+        icon={Trophy}
+        title="Accélérateur de Trophées"
+        subtitle="Repérez instantanément les Brawlers les plus rentables à monter sans résistance"
+        badge={`${easyTrophies.length} opportunités`}
+      />
 
-        {/* Filter Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          <Chip
-            label="Trophées Faciles"
-            count={boostList.length}
-            active={filter === 'easy'}
-            onClick={() => setFilter('easy')}
-            tone="yellow"
-          />
-          <Chip
-            label="Tilt Recovery"
-            count={tiltList.length}
-            active={filter === 'tilt'}
-            onClick={() => setFilter('tilt')}
-            tone="red"
-          />
-          <Chip
-            label="Tout le Roster"
-            count={brawlers.length}
-            active={filter === 'all'}
-            onClick={() => setFilter('all')}
-            tone="cyan"
-          />
-        </div>
+      {/* Filter Chips Bar */}
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+        <Chip
+          label="Trophées Faciles"
+          count={boostList.length}
+          active={filter === 'easy'}
+          onClick={() => setFilter('easy')}
+          tone="yellow"
+        />
+        <Chip
+          label="Tilt Recovery"
+          count={tiltList.length}
+          active={filter === 'tilt'}
+          onClick={() => setFilter('tilt')}
+          tone="red"
+        />
+        <Chip
+          label="Tout le Roster"
+          count={brawlers.length}
+          active={filter === 'all'}
+          onClick={() => setFilter('all')}
+          tone="cyan"
+        />
       </div>
 
       {/* Easy Trophies List */}
@@ -102,23 +96,23 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                         <span className="font-cartoon text-base text-white truncate">
                           {rec.brawlerName}
                         </span>
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon uppercase bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                        <span className="px-2 py-0.5 rounded-md text-xs font-cartoon uppercase bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
                           {rec.difficulty}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-cartoon text-sm text-[#ffc700]">
+                        <span className="font-cartoon text-sm text-[#ffc700] tabular-nums">
                           {rec.currentTrophies} 🏆
                         </span>
                         <span className="text-slate-400 font-bold text-xs">&rarr;</span>
-                        <span className="font-cartoon text-xs text-slate-200">
+                        <span className="font-cartoon text-xs text-slate-200 tabular-nums">
                           Palier {nextMilestone} 🏆
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-300 mt-3 font-medium leading-relaxed bg-[#101636] p-2.5 rounded-xl border border-white/5">
+                  <p className="text-xs sm:text-sm text-slate-300 mt-3 font-medium leading-relaxed bg-[#101636] p-2.5 rounded-xl border border-white/5">
                     {rec.reason}
                   </p>
                 </div>
@@ -131,12 +125,12 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                     color="yellow"
                     height="sm"
                   />
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#4ade80] mt-2">
-                    <span className="flex items-center gap-1">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#4ade80] mt-2">
+                    <span className="flex items-center gap-1 tabular-nums">
                       <Zap className="w-3.5 h-3.5 fill-[#4ade80]" /> +
                       {nextMilestone - rec.currentTrophies} trophées estimés
                     </span>
-                    <span className="text-slate-400 text-[10px]">Matchmaking accessible</span>
+                    <span className="text-slate-400 text-xs">Matchmaking accessible</span>
                   </div>
                 </div>
               </Card>
@@ -182,23 +176,23 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                           <span className="font-cartoon text-base text-white truncate">
                             {rec.brawlerName}
                           </span>
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon uppercase bg-[#ef4444] text-white border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-cartoon uppercase bg-[#ef4444] text-white border-2 border-[#070b16] shadow-[0_2px_0_#070b16] tabular-nums">
                             -{diff} tr
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="font-cartoon text-sm text-[#f87171]">
+                          <span className="font-cartoon text-sm text-[#f87171] tabular-nums">
                             {rec.currentTrophies} 🏆
                           </span>
                           <span className="text-slate-400 font-bold text-xs">&rarr;</span>
-                          <span className="font-cartoon text-xs text-[#ffc700]">
+                          <span className="font-cartoon text-xs text-[#ffc700] tabular-nums">
                             Record {rec.targetTrophies} 🏆
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-300 mt-3 font-medium leading-relaxed bg-[#101636] p-2.5 rounded-xl border border-white/5">
+                    <p className="text-xs sm:text-sm text-slate-300 mt-3 font-medium leading-relaxed bg-[#101636] p-2.5 rounded-xl border border-white/5">
                       {rec.reason}
                     </p>
                   </div>
@@ -211,11 +205,11 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                       color="red"
                       height="sm"
                     />
-                    <div className="flex items-center justify-between text-[11px] font-bold text-[#ffc700] mt-2">
-                      <span className="flex items-center gap-1">
+                    <div className="flex items-center justify-between text-xs font-bold text-[#ffc700] mt-2">
+                      <span className="flex items-center gap-1 tabular-nums">
                         <ArrowUpRight className="w-3.5 h-3.5" /> Récupérez {diff} trophées
                       </span>
-                      <span className="text-slate-400 text-[10px]">Palier déjà maîtrisé</span>
+                      <span className="text-slate-400 text-xs">Palier déjà maîtrisé</span>
                     </div>
                   </div>
                 </Card>
@@ -265,10 +259,10 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                 <span className="font-cartoon text-xs text-white truncate max-w-full">
                   {brawler.name}
                 </span>
-                <span className="font-cartoon text-xs text-[#ffc700] mt-0.5">
+                <span className="font-cartoon text-xs text-[#ffc700] mt-0.5 tabular-nums">
                   {brawler.trophies} 🏆
                 </span>
-                <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-slate-400">
+                <div className="flex items-center gap-1 mt-1 text-xs font-bold text-slate-400 tabular-nums">
                   <span>Max: {brawler.highestTrophies}</span>
                   {deficit > 0 && <span className="text-[#f87171]">(-{deficit})</span>}
                 </div>

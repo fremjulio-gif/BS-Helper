@@ -5,6 +5,7 @@ import { BattleLogSummary, BattleItem, BattlePlayer } from '@/types/brawlstars';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
+import { TabHeader } from '../ui/TabHeader';
 import { StaggerItem } from '../motion/Stagger';
 import { Swords, Star, CheckCircle2, XCircle } from 'lucide-react';
 import { m } from 'motion/react';
@@ -32,26 +33,22 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-cartoon text-white flex items-center gap-2.5 text-stroke-sm">
-          <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
-            <Swords className="w-5 h-5 fill-[#070b16]" />
-          </div>
-          Journal des 25 Derniers Combats
-        </h2>
-        <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-          Analyse détaillée de votre performance, rentabilité en trophées et distinctions MVP.
-        </p>
-      </div>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Unified Tab Header */}
+      <TabHeader
+        icon={Swords}
+        title="Journal des Combats"
+        subtitle="Analyse détaillée de vos 25 derniers matchs, rentabilité en trophées et distinctions MVP"
+        badge={`${summary.victories}V - ${summary.defeats}D`}
+      />
 
       {/* KPI Overview Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card topHighlight={true} className="p-3.5">
-          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <Card topHighlight={true} className="p-3.5 sm:p-4">
+          <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
             Victoires
           </span>
-          <div className="flex items-baseline gap-2 mt-1">
+          <div className="flex items-baseline gap-2 mt-1 tabular-nums">
             <span
               className={`font-cartoon text-2xl ${
                 summary.winRate >= 55 ? 'text-[#4ade80]' : 'text-[#f87171]'
@@ -59,19 +56,19 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
             >
               {summary.winRate}%
             </span>
-            <span className="text-xs font-bold text-slate-300">
+            <span className="text-xs font-bold text-slate-300 tabular-nums">
               ({summary.victories}V / {summary.defeats}D)
             </span>
           </div>
         </Card>
 
-        <Card topHighlight={true} className="p-3.5">
-          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+        <Card topHighlight={true} className="p-3.5 sm:p-4">
+          <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
             Bilan Trophées
           </span>
           <div className="flex items-baseline gap-2 mt-1">
             <span
-              className={`font-cartoon text-2xl ${
+              className={`font-cartoon text-2xl tabular-nums ${
                 summary.trophyDelta >= 0 ? 'text-[#ffc700]' : 'text-[#f87171]'
               }`}
             >
@@ -80,29 +77,29 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
           </div>
         </Card>
 
-        <Card topHighlight={true} className="p-3.5">
-          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+        <Card topHighlight={true} className="p-3.5 sm:p-4">
+          <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
             Joueur Étoile (MVP)
           </span>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="font-cartoon text-2xl text-[#ffc700]">
+          <div className="flex items-baseline gap-2 mt-1 tabular-nums">
+            <span className="font-cartoon text-2xl text-[#ffc700] tabular-nums">
               {summary.starPlayerCount} fois
             </span>
-            <span className="text-xs font-bold text-slate-300">({summary.starPlayerRate}%)</span>
+            <span className="text-xs font-bold text-slate-300 tabular-nums">({summary.starPlayerRate}%)</span>
           </div>
         </Card>
 
-        <Card topHighlight={true} className="p-3.5">
-          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+        <Card topHighlight={true} className="p-3.5 sm:p-4">
+          <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
             État Dynamique
           </span>
           <div className="flex items-center gap-1.5 mt-1.5">
             {summary.winRate >= 60 ? (
-              <span className="px-2 py-0.5 rounded-lg text-xs font-cartoon bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+              <span className="px-2.5 py-0.5 rounded-lg text-xs font-cartoon bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
                 Momentum 🔥
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded-lg text-xs font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+              <span className="px-2.5 py-0.5 rounded-lg text-xs font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
                 Stabilité 🛡️
               </span>
             )}
@@ -191,7 +188,7 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
                           <span className="text-xs text-slate-300 font-medium">({item.event.map})</span>
                         )}
                         {isStarPlayer && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] flex items-center gap-1 animate-pulse">
+                          <span className="px-2 py-0.5 rounded-md text-xs font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] flex items-center gap-1 animate-pulse">
                             <Star className="w-3 h-3 fill-[#070b16]" /> MVP
                           </span>
                         )}
@@ -207,7 +204,7 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
                   <div className="flex items-center gap-3 self-end sm:self-center">
                     {typeof battle.trophyChange === 'number' && (
                       <span
-                        className={`font-cartoon text-base text-stroke-sm ${
+                        className={`font-cartoon text-base text-stroke-sm tabular-nums ${
                           battle.trophyChange > 0
                             ? 'text-[#4ade80]'
                             : battle.trophyChange < 0

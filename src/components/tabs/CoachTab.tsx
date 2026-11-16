@@ -16,17 +16,18 @@ import { Chip } from '../ui/Chip';
 import { ProgressBar } from '../ui/ProgressBar';
 import { CoachMascot, MascotMood } from '../ui/CoachMascot';
 import { GlassSurface } from '../ui/GlassSurface';
+import { TabHeader } from '../ui/TabHeader';
 import { soundManager } from '@/lib/sound-manager';
 import { m } from 'motion/react';
 import { springSnappy } from '@/lib/motion-tokens';
 import {
   Send,
-  Sparkles,
   MessageSquare,
   ListFilter,
   Target,
   ArrowUpRight,
   ShieldAlert,
+  BotMessageSquare,
 } from 'lucide-react';
 
 interface CoachTabProps {
@@ -137,47 +138,40 @@ ${
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-cartoon text-white flex items-center gap-2.5 text-stroke-sm">
-            <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
-              <Sparkles className="w-5 h-5 fill-[#070b16]" />
-            </div>
-            Centre d&apos;Entraînement Coach Bitz
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-            Diagnostics en temps réel, analyses de patterns et coaching personnalisé.
-          </p>
-        </div>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Unified Tab Header */}
+      <TabHeader
+        icon={BotMessageSquare}
+        title="Coach Bitz IA"
+        subtitle="Diagnostics en temps réel, analyses de patterns et coaching personnalisé"
+        badge="IA Tactique"
+      />
 
-        {/* View Switcher Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-          <Chip
-            label="Chat Tactique"
-            icon={<MessageSquare className="w-4 h-4" />}
-            active={activeSubTab === 'chat'}
-            onClick={() => setActiveSubTab('chat')}
-            tone="yellow"
-          />
-          <Chip
-            label="Conseils Ciblés"
-            count={coachTips.length}
-            icon={<ListFilter className="w-4 h-4" />}
-            active={activeSubTab === 'tips'}
-            onClick={() => setActiveSubTab('tips')}
-            tone="cyan"
-          />
-          <Chip
-            label="Plan de Session"
-            count={sessionObjectives.length}
-            icon={<Target className="w-4 h-4" />}
-            active={activeSubTab === 'session'}
-            onClick={() => setActiveSubTab('session')}
-            tone="purple"
-          />
-        </div>
+      {/* View Switcher Chips Bar */}
+      <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+        <Chip
+          label="Chat Tactique"
+          icon={<MessageSquare className="w-4 h-4" />}
+          active={activeSubTab === 'chat'}
+          onClick={() => setActiveSubTab('chat')}
+          tone="yellow"
+        />
+        <Chip
+          label="Conseils Ciblés"
+          count={coachTips.length}
+          icon={<ListFilter className="w-4 h-4" />}
+          active={activeSubTab === 'tips'}
+          onClick={() => setActiveSubTab('tips')}
+          tone="cyan"
+        />
+        <Chip
+          label="Plan de Session"
+          count={sessionObjectives.length}
+          icon={<Target className="w-4 h-4" />}
+          active={activeSubTab === 'session'}
+          onClick={() => setActiveSubTab('session')}
+          tone="purple"
+        />
       </div>
 
       {/* SUB-TAB 1: LIVE CHAT */}
@@ -329,7 +323,7 @@ ${
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <span
-                      className={`px-2 py-0.5 rounded-md text-[10px] font-cartoon uppercase border-2 border-[#070b16] shadow-[0_2px_0_#070b16] ${
+                      className={`px-2 py-0.5 rounded-md text-xs font-cartoon uppercase border-2 border-[#070b16] shadow-[0_2px_0_#070b16] ${
                         tip.priority === 'high'
                           ? 'bg-[#ef4444] text-white'
                           : tip.priority === 'medium'
@@ -339,7 +333,7 @@ ${
                     >
                       {tip.tagText || 'Conseil'}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-[#0d132c] px-2 py-0.5 rounded-lg border border-white/5">
+                    <span className="text-xs font-bold text-slate-300 bg-[#0d132c] px-2 py-0.5 rounded-lg border border-white/5">
                       {tip.confidence}
                     </span>
                   </div>
@@ -347,11 +341,11 @@ ${
                   <h3 className="font-cartoon text-base text-white mt-1">{tip.title}</h3>
 
                   <div className="mt-3 bg-[#0d132c] p-3 rounded-xl border border-white/5 space-y-1.5">
-                    <div className="text-xs text-slate-300 font-medium">
+                    <div className="text-xs sm:text-sm text-slate-300 font-medium">
                       <span className="font-bold text-[#ffc700]">Donnée source : </span>
                       {tip.why}
                     </div>
-                    <div className="text-xs text-slate-100 font-bold">
+                    <div className="text-xs sm:text-sm text-slate-100 font-bold">
                       <span className="font-bold text-[#4ade80]">Quoi faire : </span>
                       {tip.action}
                     </div>
@@ -441,17 +435,17 @@ ${
                         <div className="flex items-center gap-2">
                           <span className="font-cartoon text-base text-white">{obj.title}</span>
                           {obj.completed && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-cartoon bg-[#22c55e] text-[#070b16]">
+                            <span className="px-2 py-0.5 rounded text-xs font-cartoon bg-[#22c55e] text-[#070b16]">
                               Terminé !
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-300 font-medium mt-1">
+                        <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
                           {obj.targetDescription}
                         </p>
                       </div>
 
-                      <span className="font-cartoon text-sm text-[#4ade80] shrink-0">
+                      <span className="font-cartoon text-sm text-[#4ade80] shrink-0 tabular-nums">
                         +{obj.potentialGain} tr potentiels
                       </span>
                     </div>
