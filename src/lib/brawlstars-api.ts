@@ -1,7 +1,7 @@
 import { PlayerProfile, BattleLogResponse, ActiveEvent } from '@/types/brawlstars';
 
 const DIRECT_API_URL = 'https://api.brawlstars.com/v1';
-const PROXY_API_URL = 'https://proxy.royaleapi.dev/v1';
+const PROXY_API_URL = 'https://bsproxy.royaleapi.dev/v1';
 
 function getApiKey(): string {
   const apiKey = process.env.BRAWL_STARS_API_KEY;
