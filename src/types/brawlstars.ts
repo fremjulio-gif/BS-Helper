@@ -124,3 +124,76 @@ export interface BattleLogSummary {
   modeStats: Record<string, { total: number; wins: number; winRate: number }>;
   brawlerPerformance: Record<string, { played: number; wins: number; winRate: number; trophyDelta: number }>;
 }
+
+/* ============================================================
+   NOUVEAUX TYPES PHASE 3 & 4 : CONSEILS ENRICHIS & OBJECTIFS
+   ============================================================ */
+
+export type TipCategory =
+  | 'session_plan'
+  | 'upgrade_priority'
+  | 'loss_pattern'
+  | 'tilt_warning'
+  | 'mode_guide'
+  | 'team_comp'
+  | 'milestone'
+  | 'trivia';
+
+export type TipPriority = 'high' | 'medium' | 'low';
+export type ConfidenceLevel = 'Donnée vérifiée' | 'Heuristique forte' | 'Conseil tactique';
+
+export interface TacticalTip {
+  id: string;
+  category: TipCategory;
+  priority: TipPriority;
+  title: string;
+  why: string;
+  action: string;
+  brawlerId?: number;
+  brawlerName?: string;
+  mode?: string;
+  confidence: ConfidenceLevel;
+  tagText?: string;
+}
+
+export interface SessionObjective {
+  id: string;
+  title: string;
+  targetDescription: string;
+  current: number;
+  target: number;
+  unit: string;
+  completed: boolean;
+  brawlerId?: number;
+  brawlerName?: string;
+  potentialGain: number;
+}
+
+export interface LossPatternReport {
+  consecutiveLosses: number;
+  worstMode?: { mode: string; losses: number; winRate: number };
+  worstBrawler?: { name: string; losses: number; trophyLoss: number };
+  tiltAlertActive: boolean;
+  recommendedPauseMinutes?: number;
+  cooldownMessage?: string;
+}
+
+export interface UpgradePriorityItem {
+  brawlerId: number;
+  brawlerName: string;
+  currentPower: number;
+  targetPower: number;
+  trophies: number;
+  missingAccessory: 'Star Power' | 'Hypercharge' | 'Gears' | 'Niveau 9' | 'Niveau 11';
+  impactDescription: string;
+  priority: 'Haute' | 'Moyenne' | 'Basse';
+}
+
+export interface MilestoneRoad {
+  currentTrophies: number;
+  nextMilestone: number;
+  trophiesRemaining: number;
+  estimatedMatches: number;
+  rankTitle: string;
+  advice: string;
+}

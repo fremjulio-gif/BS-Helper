@@ -8,7 +8,11 @@ import {
   getEasyTrophyOpportunities,
   getMapRecommendations,
   analyzeBattleLog,
-  generateCoachTips,
+  generateSessionObjectives,
+  analyzeLossPatterns,
+  detectUpgradePriorities,
+  calculateMilestoneRoad,
+  generateComprehensiveTacticalTips,
 } from '@/lib/strategy-engine';
 import {
   recordPlayerSnapshot,
@@ -36,12 +40,24 @@ export async function GET(req: NextRequest) {
       console.error('Failed to sync battle log:', err)
     );
 
-    // 3. Run strategic analytics
+    // 3. Run strategic analytics & new tactical modules
     const easyTrophies = getEasyTrophyOpportunities(profile.brawlers);
     const mapRecommendations = getMapRecommendations(events, profile.brawlers);
     const battleSummary = analyzeBattleLog(battleLog.items, profile.tag);
-    const coachTips = generateCoachTips(profile, battleSummary);
     const progression = await getPlayerProgression(profile.tag);
+
+    const sessionObjectives = generateSessionObjectives(profile, battleSummary);
+    const lossReport = analyzeLossPatterns(battleLog.items, profile.tag);
+    const upgradePriorities = detectUpgradePriorities(profile);
+    const milestoneRoad = calculateMilestoneRoad(profile, progression);
+
+    const tips = generateComprehensiveTacticalTips(
+      profile,
+      battleSummary,
+      lossReport,
+      upgradePriorities,
+      milestoneRoad
+    );
 
     return NextResponse.json({
       success: true,
@@ -49,9 +65,13 @@ export async function GET(req: NextRequest) {
       easyTrophies,
       mapRecommendations,
       battleSummary,
-      coachTips,
+      tips,
+      sessionObjectives,
+      lossReport,
+      upgradePriorities,
+      milestoneRoad,
       progression,
-      recentBattles: battleLog.items.slice(0, 10),
+      recentBattles: battleLog.items.slice(0, 15),
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';

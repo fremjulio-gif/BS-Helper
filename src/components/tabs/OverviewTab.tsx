@@ -1,12 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PlayerProfile, BattleLogSummary } from '@/types/brawlstars';
+import {
+  PlayerProfile,
+  BattleLogSummary,
+  SessionObjective,
+  MilestoneRoad,
+  LossPatternReport,
+  TacticalTip,
+} from '@/types/brawlstars';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { CoachMascot } from '../ui/CoachMascot';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TrophyCounter } from '../ui/TrophyCounter';
+import { ProgressBar } from '../ui/ProgressBar';
 import { triggerTrophyConfetti } from '../ui/Confetti';
 import {
   Trophy,
@@ -17,6 +25,10 @@ import {
   Sparkles,
   ArrowRight,
   PartyPopper,
+  Target,
+  CheckCircle2,
+  AlertTriangle,
+  Compass,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -31,7 +43,10 @@ interface OverviewTabProps {
   profile: PlayerProfile;
   battleSummary: BattleLogSummary;
   progression: Array<{ date: string; trophies: number; rankedElo?: number | null; fullDate?: string }>;
-  coachTips: Array<{ title: string; message: string; priority: 'high' | 'medium' | 'low'; icon: string }>;
+  coachTips: TacticalTip[];
+  sessionObjectives?: SessionObjective[];
+  milestoneRoad?: MilestoneRoad | null;
+  lossReport?: LossPatternReport | null;
   onGoToCoach: () => void;
   onGoToRush: () => void;
 }
@@ -41,13 +56,15 @@ export function OverviewTab({
   battleSummary,
   progression,
   coachTips,
+  sessionObjectives = [],
+  milestoneRoad,
+  lossReport,
   onGoToCoach,
   onGoToRush,
 }: OverviewTabProps) {
   const [period, setPeriod] = useState<'24h' | '7d' | 'all'>('all');
   const topTip = coachTips[0];
 
-  // Filter progression according to period
   const filterProgressionData = () => {
     if (progression.length <= 1) {
       return [
@@ -72,12 +89,44 @@ export function OverviewTab({
 
   return (
     <div className="space-y-6">
+      {/* Tilt Warning Banner (if active) */}
+      {lossReport?.tiltAlertActive && (
+        <div className="brawl-card p-4 bg-gradient-to-r from-[#45141d] to-[#250d14] border-3 border-[#ef4444] shadow-[0_4px_0_#070b16] flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <CoachMascot mood="tilt" size={48} />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-[#ef4444]" />
+                <span className="font-cartoon text-sm text-[#ef4444] uppercase tracking-wide">
+                  Alerte Tilt Active
+                </span>
+              </div>
+              <p className="text-xs text-slate-200 mt-0.5 font-bold">
+                {lossReport.cooldownMessage ||
+                  `${lossReport.consecutiveLosses} défaites consécutives. Prenez 15 minutes de pause pour réinitialiser le rythme !`}
+              </p>
+            </div>
+          </div>
+          <Button variant="red" size="sm" onClick={onGoToCoach}>
+            Conseils Anti-Tilt
+          </Button>
+        </div>
+      )}
+
       {/* Hero Action Banner with Coach Bitz Mascot */}
       <div className="brawl-card p-5 sm:p-6 bg-gradient-to-r from-[#2a1d68] via-[#1a2356] to-[#12193e] border-3 border-[#070b16] relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative z-10">
           <div className="flex items-start gap-4">
             <CoachMascot
-              mood={battleSummary.winRate < 45 ? 'tilt' : profile.trophies >= profile.highestTrophies ? 'proud' : 'pumped'}
+              mood={
+                lossReport?.tiltAlertActive
+                  ? 'tilt'
+                  : battleSummary.winRate >= 60
+                  ? 'pumped'
+                  : profile.trophies >= profile.highestTrophies
+                  ? 'proud'
+                  : 'neutral'
+              }
               size={68}
             />
             <div>
@@ -94,7 +143,7 @@ export function OverviewTab({
               </h3>
               <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-xl font-medium leading-relaxed">
                 {topTip
-                  ? topTip.message
+                  ? topTip.action
                   : `Tu as ${profile.trophies.toLocaleString()} trophées. Consulte tes opportunités de rush pour continuer de monter !`}
               </p>
             </div>
@@ -211,6 +260,75 @@ export function OverviewTab({
         </Card>
       </div>
 
+      {/* Plan de Session & Objectifs Clés */}
+      {sessionObjectives.length > 0 && (
+        <Card topHighlight={true} className="p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
+                <Target className="w-5 h-5 fill-[#070b16]" />
+              </div>
+              <div>
+                <h3 className="font-cartoon text-base sm:text-lg text-white">
+                  Plan de Session du Jour
+                </h3>
+                <p className="text-xs text-slate-300 font-medium">
+                  3 objectifs concrets calculés à partir de vos statistiques actuelles
+                </p>
+              </div>
+            </div>
+
+            {milestoneRoad && (
+              <div className="hidden sm:flex items-center gap-2 bg-[#0d132c] px-3 py-1.5 rounded-xl border-2 border-[#070b16] text-xs">
+                <Compass className="w-4 h-4 text-yellow-400" />
+                <span className="font-cartoon text-white">{milestoneRoad.rankTitle}</span>
+                <span className="text-[11px] text-yellow-400 font-bold">
+                  (-{milestoneRoad.trophiesRemaining} tr)
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            {sessionObjectives.map((obj) => {
+              const progressPct = Math.min(100, Math.round((obj.current / obj.target) * 100));
+
+              return (
+                <div
+                  key={obj.id}
+                  className="brawl-card p-4 bg-[#111634] border-2 border-[#070b16] flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-cartoon text-sm text-white truncate">{obj.title}</span>
+                      {obj.completed ? (
+                        <CheckCircle2 className="w-4 h-4 text-[#22c55e]" />
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-cartoon bg-[#22c55e]/20 text-[#4ade80] border border-[#22c55e]/40">
+                          +{obj.potentialGain} tr
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-300 font-medium mt-1.5 leading-relaxed">
+                      {obj.targetDescription}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2">
+                    <ProgressBar
+                      value={progressPct}
+                      subLabel={`${obj.current} / ${obj.target} ${obj.unit}`}
+                      color={obj.completed ? 'green' : 'yellow'}
+                      height="sm"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* Progression Recharts Graph with Period Selector */}
       <Card topHighlight={true} className="p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
@@ -228,7 +346,6 @@ export function OverviewTab({
             </div>
           </div>
 
-          {/* Period selector */}
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0b1029] border-2 border-[#070b16]">
             {(['24h', '7d', 'all'] as const).map((p) => (
               <button

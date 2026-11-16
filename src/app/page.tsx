@@ -11,6 +11,7 @@ import { BattleLogTab } from '@/components/tabs/BattleLogTab';
 import { CoachTab } from '@/components/tabs/CoachTab';
 import { CoachMascot } from '@/components/ui/CoachMascot';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { TagModal } from '@/components/ui/TagModal';
 import {
   PlayerProfile,
   StrategyRecommendation,
@@ -18,6 +19,11 @@ import {
   PlayerBrawler,
   BattleLogSummary,
   BattleItem,
+  TacticalTip,
+  SessionObjective,
+  LossPatternReport,
+  UpgradePriorityItem,
+  MilestoneRoad,
 } from '@/types/brawlstars';
 
 export default function HomePage() {
@@ -26,25 +32,35 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  // Player Tag state (stored in localStorage)
+  const [currentTag, setCurrentTag] = useState<string>('#8L80JGJGG');
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [easyTrophies, setEasyTrophies] = useState<StrategyRecommendation[]>([]);
   const [mapRecommendations, setMapRecommendations] = useState<
     Array<{ event: ActiveEvent; recommendedBrawlers: PlayerBrawler[] }>
   >([]);
   const [battleSummary, setBattleSummary] = useState<BattleLogSummary | null>(null);
-  const [coachTips, setCoachTips] = useState<
-    Array<{ title: string; message: string; priority: 'high' | 'medium' | 'low'; icon: string }>
-  >([]);
+  const [tacticalTips, setTacticalTips] = useState<TacticalTip[]>([]);
+  const [sessionObjectives, setSessionObjectives] = useState<SessionObjective[]>([]);
+  const [lossReport, setLossReport] = useState<LossPatternReport | null>(null);
+  const [upgradePriorities, setUpgradePriorities] = useState<UpgradePriorityItem[]>([]);
+  const [milestoneRoad, setMilestoneRoad] = useState<MilestoneRoad | null>(null);
   const [progression, setProgression] = useState<
     Array<{ date: string; trophies: number; rankedElo?: number | null; fullDate?: string }>
   >([]);
   const [recentBattles, setRecentBattles] = useState<BattleItem[]>([]);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (tagOverride?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/dashboard');
+      const activeTag =
+        tagOverride ||
+        (typeof window !== 'undefined' && localStorage.getItem('bs_player_tag')) ||
+        '#8L80JGJGG';
+      const res = await fetch(`/api/dashboard?tag=${encodeURIComponent(activeTag)}`);
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Erreur lors de la récupération des données.');
@@ -53,7 +69,11 @@ export default function HomePage() {
       setEasyTrophies(data.easyTrophies || []);
       setMapRecommendations(data.mapRecommendations || []);
       setBattleSummary(data.battleSummary);
-      setCoachTips(data.coachTips || []);
+      setTacticalTips(data.tips || []);
+      setSessionObjectives(data.sessionObjectives || []);
+      setLossReport(data.lossReport || null);
+      setUpgradePriorities(data.upgradePriorities || []);
+      setMilestoneRoad(data.milestoneRoad || null);
       setProgression(data.progression || []);
       setRecentBattles(data.recentBattles || []);
       setLastUpdated(new Date());
@@ -65,17 +85,31 @@ export default function HomePage() {
     }
   }, []);
 
+  // Load saved tag from localStorage on mount
   useEffect(() => {
-    loadData();
+    const saved = localStorage.getItem('bs_player_tag');
+    if (saved) {
+      setCurrentTag(saved);
+      loadData(saved);
+    } else {
+      loadData('#8L80JGJGG');
+    }
   }, [loadData]);
+
+  const handleSelectTag = (newTag: string) => {
+    setCurrentTag(newTag);
+    localStorage.setItem('bs_player_tag', newTag);
+    loadData(newTag);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar
         profile={profile}
         loading={loading}
-        onRefresh={loadData}
+        onRefresh={() => loadData()}
         lastUpdated={lastUpdated}
+        onOpenTagModal={() => setIsTagModalOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
@@ -90,7 +124,7 @@ export default function HomePage() {
             title="Connexion interrompue"
             description={error}
             mood="tilt"
-            onRetry={loadData}
+            onRetry={() => loadData()}
             retryLabel="Réessayer la connexion"
             className="my-8"
           />
@@ -115,7 +149,10 @@ export default function HomePage() {
                 profile={profile}
                 battleSummary={battleSummary}
                 progression={progression}
-                coachTips={coachTips}
+                coachTips={tacticalTips}
+                sessionObjectives={sessionObjectives}
+                milestoneRoad={milestoneRoad}
+                lossReport={lossReport}
                 onGoToCoach={() => setCurrentTab('coach')}
                 onGoToRush={() => setCurrentTab('trophies')}
               />
@@ -136,7 +173,15 @@ export default function HomePage() {
             )}
 
             {currentTab === 'coach' && (
-              <CoachTab profile={profile} battleSummary={battleSummary} coachTips={coachTips} />
+              <CoachTab
+                profile={profile}
+                battleSummary={battleSummary}
+                coachTips={tacticalTips}
+                sessionObjectives={sessionObjectives}
+                lossReport={lossReport}
+                upgradePriorities={upgradePriorities}
+                milestoneRoad={milestoneRoad}
+              />
             )}
           </div>
         ) : null}
@@ -147,6 +192,14 @@ export default function HomePage() {
         currentTab={currentTab}
         onChangeTab={setCurrentTab}
         easyCount={easyTrophies.length}
+      />
+
+      {/* Tag Switcher Modal */}
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        currentTag={currentTag}
+        onSelectTag={handleSelectTag}
       />
 
       {/* Disclaimer Footer (Supercell Fan Content Policy) */}

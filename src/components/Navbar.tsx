@@ -4,7 +4,7 @@ import React from 'react';
 import { PlayerProfile } from '@/types/brawlstars';
 import { TrophyCounter } from './ui/TrophyCounter';
 import { SoundToggle } from './ui/SoundToggle';
-import { Shield, RefreshCw, Zap } from 'lucide-react';
+import { Shield, RefreshCw, Zap, Tag } from 'lucide-react';
 import { soundManager } from '@/lib/sound-manager';
 
 interface NavbarProps {
@@ -12,9 +12,16 @@ interface NavbarProps {
   loading: boolean;
   onRefresh: () => void;
   lastUpdated?: Date | null;
+  onOpenTagModal?: () => void;
 }
 
-export function Navbar({ profile, loading, onRefresh, lastUpdated }: NavbarProps) {
+export function Navbar({
+  profile,
+  loading,
+  onRefresh,
+  lastUpdated,
+  onOpenTagModal,
+}: NavbarProps) {
   const handleRefreshClick = () => {
     soundManager.playTap();
     onRefresh();
@@ -50,7 +57,7 @@ export function Navbar({ profile, loading, onRefresh, lastUpdated }: NavbarProps
 
           {/* Player Bar & Controls */}
           {profile && (
-            <div className="flex items-center gap-2.5 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3.5">
               {/* Trophies Counter */}
               <div className="bg-[#18214a] px-3 py-1.5 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16]">
                 <TrophyCounter value={profile.trophies} size="sm" />
@@ -71,8 +78,15 @@ export function Navbar({ profile, loading, onRefresh, lastUpdated }: NavbarProps
                 </div>
               )}
 
-              {/* Player Avatar Pill */}
-              <div className="flex items-center gap-2 bg-[#18214a] pl-1.5 pr-3 py-1 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16]">
+              {/* Player Avatar Pill (Clickable to switch tag) */}
+              <button
+                onClick={() => {
+                  soundManager.playTap();
+                  if (onOpenTagModal) onOpenTagModal();
+                }}
+                title="Changer de compte / tag joueur"
+                className="flex items-center gap-2 bg-[#18214a] hover:bg-[#202b5e] pl-1.5 pr-3 py-1 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16] cursor-pointer transition-transform active:translate-y-0.5"
+              >
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-[#42eeff] to-[#00b8db] border-2 border-[#070b16] flex items-center justify-center font-cartoon text-[#070b16] text-xs">
                   {profile.name.slice(0, 2).toUpperCase()}
                 </div>
@@ -83,11 +97,12 @@ export function Navbar({ profile, loading, onRefresh, lastUpdated }: NavbarProps
                   >
                     {profile.name}
                   </span>
-                  <span className="text-[9px] font-black text-slate-400 font-mono">
+                  <span className="text-[9px] font-black text-slate-400 font-mono flex items-center gap-0.5">
+                    <Tag className="w-2.5 h-2.5" />
                     {profile.tag}
                   </span>
                 </div>
-              </div>
+              </button>
 
               {/* Sound Toggle */}
               <SoundToggle />
