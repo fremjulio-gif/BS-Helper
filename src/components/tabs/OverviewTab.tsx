@@ -16,6 +16,7 @@ import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TrophyCounter } from '../ui/TrophyCounter';
 import { ProgressBar } from '../ui/ProgressBar';
 import { TabHeader } from '../ui/TabHeader';
+import { RankingsCard } from '../ui/RankingsCard';
 import { triggerTrophyConfetti } from '../ui/Confetti';
 import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { StaggerItem } from '../motion/Stagger';
@@ -297,6 +298,9 @@ export function OverviewTab({
           </div>
         </Card>
       </div>
+
+      {/* Surveillance des Classements Officiels Supercell & Objectif Top 200 */}
+      <RankingsCard playerTag={profile.tag} />
 
       {/* Plan de Session & Objectifs Clés */}
       {sessionObjectives.length > 0 && (

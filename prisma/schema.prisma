@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model PlayerSnapshot {
@@ -28,18 +29,23 @@ model BattleRecord {
   id              String   @id @default(cuid())
   playerTag       String
   battleTime      String
+  battleAt        DateTime @default(now())
   mode            String
   map             String?
   result          String?
   rank            Int?
   trophyChange    Int?
+  brawlerId       Int?
   brawlerName     String
   brawlerPower    Int
   brawlerTrophies Int?
   isStarPlayer    Boolean  @default(false)
   duration        Int?
+  alliesJson      Json?
+  opponentsJson   Json?
   createdAt       DateTime @default(now())
 
   @@unique([playerTag, battleTime])
+  @@index([playerTag, battleAt])
   @@index([playerTag, brawlerName])
 }

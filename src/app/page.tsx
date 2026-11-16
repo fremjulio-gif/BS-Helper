@@ -15,6 +15,7 @@ import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { SplashScreen } from '@/components/ui/SplashScreen';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { getTabDirection } from '@/lib/motion-tokens';
+import { HistoricalStatsResponse } from '@/lib/stats-recorder';
 import {
   PlayerProfile,
   StrategyRecommendation,
@@ -59,6 +60,7 @@ export default function HomePage() {
   const [recentBattles, setRecentBattles] = useState<BattleItem[]>([]);
   const [gameModes, setGameModes] = useState<Record<string, GameModeMeta>>({});
   const [catalog, setCatalog] = useState<CatalogResponse | undefined>(undefined);
+  const [historicalStats, setHistoricalStats] = useState<HistoricalStatsResponse | null>(null);
 
   const loadData = useCallback(async (tagOverride?: string) => {
     setLoading(true);
@@ -86,6 +88,7 @@ export default function HomePage() {
       setRecentBattles(data.recentBattles || []);
       setGameModes(data.gameModes || {});
       if (data.catalog) setCatalog(data.catalog);
+      if (data.historicalStats) setHistoricalStats(data.historicalStats);
       setLastUpdated(new Date());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Une erreur inattendue est survenue.';
@@ -188,6 +191,7 @@ export default function HomePage() {
                 recentBattles={recentBattles}
                 myTag={profile.tag}
                 gameModes={gameModes}
+                historicalStats={historicalStats}
               />
             )}
 

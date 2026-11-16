@@ -20,6 +20,7 @@ import {
   recordPlayerSnapshot,
   syncBattleLog,
   getPlayerProgression,
+  getHistoricalBattleStats,
 } from '@/lib/stats-recorder';
 
 export async function GET(req: NextRequest) {
@@ -47,7 +48,10 @@ export async function GET(req: NextRequest) {
     const easyTrophies = getEasyTrophyOpportunities(profile.brawlers);
     const mapRecommendations = getMapRecommendations(events, profile.brawlers);
     const battleSummary = analyzeBattleLog(battleLog.items, profile.tag);
-    const progression = await getPlayerProgression(profile.tag);
+    const [progression, historicalStats] = await Promise.all([
+      getPlayerProgression(profile.tag),
+      getHistoricalBattleStats(profile.tag),
+    ]);
 
     const [catalog, sessionObjectives, lossReport, upgradePriorities, milestoneRoad] =
       await Promise.all([
@@ -85,6 +89,7 @@ export async function GET(req: NextRequest) {
       recentBattles: battleLog.items.slice(0, 15),
       gameModes,
       catalog,
+      historicalStats,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';

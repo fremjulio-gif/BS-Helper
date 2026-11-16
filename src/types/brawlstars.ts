@@ -102,6 +102,10 @@ export interface PlayerProfile {
   rankedElo?: number;
   highestAllTimeRankedRankName?: string;
   highestAllTimeRankedElo?: number;
+  club?: {
+    tag: string;
+    name: string;
+  };
   brawlers: PlayerBrawler[];
 }
 
