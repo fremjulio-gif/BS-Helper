@@ -9,6 +9,7 @@ import { soundManager } from '@/lib/sound-manager';
 import { m } from 'motion/react';
 import { useSettings } from '@/lib/settings-context';
 import { springBouncy } from '@/lib/motion-tokens';
+import { GlassSurface } from './ui/GlassSurface';
 
 interface NavbarProps {
   profile: PlayerProfile | null;
@@ -55,20 +56,24 @@ export function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[#12183b]/95 backdrop-blur-md border-b-3 border-[#070b16] shadow-[0_4px_0_#070b16]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18">
+      <header className="sticky top-0 z-40 w-full px-3 sm:px-6 pt-2.5 sm:pt-3 pointer-events-none">
+        <GlassSurface
+          level="subtle"
+          floating
+          className="max-w-6xl mx-auto px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-2xl sm:rounded-3xl pointer-events-auto"
+        >
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Logo & Brand */}
-            <div className="flex items-center gap-3">
-              <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-b from-[#ffea55] to-[#ffaa00] border-3 border-[#070b16] shadow-[0_4px_0_#070b16] text-[#070b16] shrink-0">
-                <Zap className="w-6 h-6 fill-[#070b16]" />
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+              <div className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-b from-[#ffea55] to-[#ffaa00] border-2 border-[#070b16] shadow-[0_3px_0_#070b16] text-[#070b16] shrink-0">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 fill-[#070b16]" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-cartoon text-xl tracking-wider text-white text-stroke-sm">
+                  <span className="font-cartoon text-lg sm:text-xl tracking-wider text-white text-stroke-sm">
                     BS HELPER
                   </span>
-                  <span className="px-2 py-0.5 rounded-lg text-[10px] font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                  <span className="px-1.5 sm:px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
                     PRO
                   </span>
                 </div>
@@ -80,15 +85,15 @@ export function Navbar({
 
             {/* Player Bar & Controls */}
             {profile && (
-              <div className="flex items-center gap-2 sm:gap-3.5">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 {/* Trophies Counter */}
-                <div className="bg-[#18214a] px-3 py-1.5 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16]">
+                <div className="bg-[#18214a]/90 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16] flex items-center min-h-[44px]">
                   <TrophyCounter value={profile.trophies} size="sm" />
                 </div>
 
                 {/* Ranked Tier */}
                 {profile.rankedRankName && (
-                  <div className="hidden lg:flex items-center gap-2 bg-[#18214a] px-3 py-1.5 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16]">
+                  <div className="hidden lg:flex items-center gap-2 bg-[#18214a]/90 px-3 py-1.5 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16] min-h-[44px]">
                     <Shield className="w-4 h-4 text-[#c084fc]" />
                     <div className="text-left">
                       <span className="font-cartoon text-xs text-[#c084fc] block leading-none">
@@ -108,19 +113,19 @@ export function Navbar({
                     if (onOpenTagModal) onOpenTagModal();
                   }}
                   title="Changer de compte / tag joueur"
-                  className="flex items-center gap-2 bg-[#18214a] hover:bg-[#202b5e] pl-1.5 pr-3 py-1 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16] cursor-pointer transition-transform active:translate-y-0.5"
+                  className="flex items-center gap-2 bg-[#18214a]/90 hover:bg-[#202b5e] pl-1.5 pr-2.5 sm:pr-3 py-1 rounded-2xl border-2 border-[#070b16] shadow-[0_3px_0_#070b16] cursor-pointer transition-transform active:translate-y-0.5 min-h-[44px]"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-[#42eeff] to-[#00b8db] border-2 border-[#070b16] flex items-center justify-center font-cartoon text-[#070b16] text-xs">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-b from-[#42eeff] to-[#00b8db] border-2 border-[#070b16] flex items-center justify-center font-cartoon text-[#070b16] text-xs shrink-0">
                     {profile.name.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="text-left hidden sm:block">
                     <span
-                      className="font-cartoon text-sm text-white block leading-none"
+                      className="font-cartoon text-xs sm:text-sm text-white block leading-none"
                       style={{ color: profile.nameColor ? `#${profile.nameColor.slice(4)}` : undefined }}
                     >
                       {profile.name}
                     </span>
-                    <span className="text-[9px] font-black text-slate-400 font-mono flex items-center gap-0.5">
+                    <span className="text-[10px] font-black text-slate-400 font-mono flex items-center gap-0.5">
                       <Tag className="w-2.5 h-2.5" />
                       {profile.tag}
                     </span>
@@ -133,8 +138,8 @@ export function Navbar({
                     soundManager.playTap();
                     setIsSettingsOpen(true);
                   }}
-                  title="Ouvrir les réglages (Sons, Vibrations, Animations)"
-                  className="p-2 rounded-xl bg-[#18214a] hover:bg-[#222d64] border-2 border-[#070b16] shadow-[0_3px_0_#070b16] text-slate-300 hover:text-white cursor-pointer active:translate-y-0.5"
+                  title="Ouvrir les réglages (Sons, Vibrations, Animations, Transparence)"
+                  className="w-11 h-11 rounded-2xl bg-[#18214a]/90 hover:bg-[#222d64] border-2 border-[#070b16] shadow-[0_3px_0_#070b16] text-slate-200 hover:text-white cursor-pointer active:translate-y-0.5 flex items-center justify-center shrink-0"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                 </button>
@@ -144,7 +149,7 @@ export function Navbar({
                   onClick={handleRefreshClick}
                   disabled={loading}
                   title={`Actualiser (Dernière synchro : ${relativeTime})`}
-                  className="brawl-btn brawl-btn-yellow min-w-[40px] min-h-[40px] px-2.5 py-1.5 rounded-xl flex items-center gap-1.5"
+                  className="brawl-btn brawl-btn-yellow min-w-[44px] min-h-[44px] px-2.5 py-1.5 rounded-2xl flex items-center justify-center gap-1.5 shrink-0"
                 >
                   <m.div
                     animate={loading ? { rotate: 360 } : { rotate: 0 }}
@@ -165,7 +170,7 @@ export function Navbar({
               </div>
             )}
           </div>
-        </div>
+        </GlassSurface>
       </header>
 
       {/* Settings Modal */}

@@ -125,7 +125,7 @@ export default function HomePage() {
         onOpenTagModal={() => setIsTagModalOpen(true)}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-28 sm:pb-32 md:pb-12">
         <DesktopNav
           currentTab={currentTab}
           onChangeTab={handleTabChange}
@@ -207,7 +207,7 @@ export default function HomePage() {
 
       {/* Disclaimer Footer (Supercell Fan Content Policy) */}
       <footer className="w-full border-t-2 border-[#070b16]/60 bg-[#0d122c]/90 py-5 text-center px-4 text-xs text-slate-400 font-medium">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[11px] leading-relaxed">
             Ce contenu n&apos;est pas affilié, soutenu, sponsorisé ou spécifiquement approuvé par Supercell
             et Supercell n&apos;en est pas responsable. Pour plus d&apos;informations, consultez le Règlement sur les Contenus de Fans de Supercell.

@@ -15,6 +15,7 @@ import { Button } from '../ui/Button';
 import { Chip } from '../ui/Chip';
 import { ProgressBar } from '../ui/ProgressBar';
 import { CoachMascot, MascotMood } from '../ui/CoachMascot';
+import { GlassSurface } from '../ui/GlassSurface';
 import { soundManager } from '@/lib/sound-manager';
 import { m } from 'motion/react';
 import { springSnappy } from '@/lib/motion-tokens';
@@ -259,8 +260,11 @@ ${
             ))}
           </div>
 
-          {/* Chat input */}
-          <div className="pt-2 flex items-center gap-2">
+          {/* Chat input glass capsule */}
+          <GlassSurface
+            level="subtle"
+            className="p-1.5 rounded-2xl sm:rounded-3xl flex items-center gap-2 mt-2 shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+          >
             <input
               type="text"
               value={input}
@@ -268,7 +272,7 @@ ${
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Pose ta question à Bitz (ex: 'Conseil Heist', 'Build Spike')..."
               disabled={loading}
-              className="flex-1 bg-[#0b1029] border-2 border-[#070b16] rounded-2xl px-4 py-3 text-xs sm:text-sm font-bold text-white placeholder-slate-400 focus:outline-none focus:border-[#ffc700]"
+              className="flex-1 bg-transparent border-none px-4 py-2.5 text-xs sm:text-sm font-bold text-white placeholder-slate-400 focus:outline-none"
             />
             <Button
               variant="yellow"
@@ -279,7 +283,7 @@ ${
             >
               <span className="hidden sm:inline">Envoyer</span>
             </Button>
-          </div>
+          </GlassSurface>
         </Card>
       )}
 

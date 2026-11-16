@@ -404,16 +404,20 @@ export function OverviewTab({
                 domain={['dataMin - 60', 'dataMax + 60']}
               />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: '#12183b',
-                  borderColor: '#070b16',
-                  borderWidth: '3px',
-                  borderRadius: '16px',
-                  color: '#ffffff',
-                  fontFamily: 'var(--font-nunito)',
-                  boxShadow: '0 4px 0 #070b16',
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="liquid-glass-subtle px-3.5 py-2.5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-xs font-cartoon select-none">
+                        <p className="text-slate-300 font-bold mb-1">{label}</p>
+                        <p className="text-yellow-400 font-bold flex items-center gap-1.5 tabular-nums">
+                          <span className="text-sm">{Number(payload[0].value).toLocaleString()}</span>
+                          <span>🏆 Trophées</span>
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
-                formatter={(value: unknown) => [`${Number(value).toLocaleString()} 🏆`, 'Trophées']}
               />
               <Area
                 type="monotone"

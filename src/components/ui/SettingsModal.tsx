@@ -5,6 +5,7 @@ import { useSettings } from '@/lib/settings-context';
 import { soundManager } from '@/lib/sound-manager';
 import { Button } from './Button';
 import { Volume2, VolumeX, Smartphone, Eye, Sparkles, X, Check, Layers } from 'lucide-react';
+import { GlassSurface } from './GlassSurface';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -26,15 +27,19 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
-      <div className="brawl-card max-w-md w-full p-6 relative bg-gradient-to-b from-[#1c2452] to-[#111736] border-3 border-[#070b16]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in">
+      <GlassSurface
+        level="pronounced"
+        floating
+        className="max-w-md w-full p-6 relative rounded-3xl shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
+      >
         {/* Close Button */}
         <button
           onClick={() => {
             soundManager.playTap();
             onClose();
           }}
-          className="absolute top-4 right-4 p-1.5 rounded-xl bg-[#0e142e] border-2 border-[#070b16] text-slate-300 hover:text-white cursor-pointer"
+          className="absolute top-4 right-4 p-2 rounded-xl bg-[#0e142e] border-2 border-[#070b16] text-slate-300 hover:text-white cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -201,7 +206,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             Fermer les Réglages
           </Button>
         </div>
-      </div>
+      </GlassSurface>
     </div>
   );
 }

@@ -105,7 +105,7 @@ export function TrophyCounter({
           </span>
         )}
         <span
-          className={`font-cartoon text-[#ffc700] text-stroke-sm tracking-wide leading-none ${sizeClasses}`}
+          className={`font-cartoon text-[#ffc700] text-stroke-sm tracking-wide leading-none tabular-nums ${sizeClasses}`}
         >
           {displayValue.toLocaleString()}
         </span>
@@ -126,18 +126,18 @@ export function TrophyCounter({
                   : { opacity: 0, y: -36, scale: 0.85 }
               }
               transition={reduceMotion ? { duration: 0.15 } : springBouncy}
-              className={`absolute -top-3 right-0 z-30 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-cartoon border-2 border-[#070b16] shadow-[0_2px_0_#070b16] select-none ${
+              className={`absolute -top-3 right-0 z-30 flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-cartoon select-none tabular-nums liquid-glass-subtle shadow-[0_4px_16px_rgba(0,0,0,0.35)] ${
                 floatingDelta > 0
-                  ? 'bg-[#22c55e] text-[#070b16]'
-                  : 'bg-[#ef4444] text-white'
+                  ? 'border-emerald-400/40 text-emerald-300 bg-emerald-950/50'
+                  : 'border-rose-400/40 text-rose-300 bg-rose-950/50'
               }`}
             >
               {floatingDelta > 0 ? (
-                <ArrowUp className="w-3 h-3 stroke-[3px]" />
+                <ArrowUp className="w-3 h-3 stroke-[3px] text-emerald-300" />
               ) : (
-                <ArrowDown className="w-3 h-3 stroke-[3px]" />
+                <ArrowDown className="w-3 h-3 stroke-[3px] text-rose-300" />
               )}
-              <span>
+              <span className="tabular-nums font-bold">
                 {floatingDelta > 0 ? `+${floatingDelta}` : floatingDelta}
               </span>
             </m.div>
