@@ -4,7 +4,7 @@ import React from 'react';
 import { useSettings } from '@/lib/settings-context';
 import { soundManager } from '@/lib/sound-manager';
 import { Button } from './Button';
-import { Volume2, VolumeX, Smartphone, Eye, Sparkles, X, Check } from 'lucide-react';
+import { Volume2, VolumeX, Smartphone, Eye, Sparkles, X, Check, Layers } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -16,9 +16,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     sound,
     haptics,
     reduceMotion,
+    reduceTransparency,
     toggleSound,
     toggleHaptics,
     toggleReduceMotion,
+    toggleReduceTransparency,
   } = useSettings();
 
   if (!isOpen) return null;
@@ -64,7 +66,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <span className="font-cartoon text-sm text-white block leading-tight">
                   Effets Sonores Synthétisés
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-xs text-slate-300">
                   {sound ? 'Activés (ondes douces sinusoïdales)' : 'Désactivés (mode silencieux)'}
                 </span>
               </div>
@@ -99,7 +101,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <span className="font-cartoon text-sm text-white block leading-tight">
                   Vibrations Haptiques
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-xs text-slate-300">
                   {haptics ? 'Activées sur mobile compatible' : 'Désactivées'}
                 </span>
               </div>
@@ -134,7 +136,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <span className="font-cartoon text-sm text-white block leading-tight">
                   Mode Mouvement Réduit
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-xs text-slate-300">
                   {reduceMotion ? 'Sobriété activée (pas de rebond ni glissement)' : 'Animations cartoon actives'}
                 </span>
               </div>
@@ -149,6 +151,38 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               }`}
             >
               {reduceMotion ? 'ACTIF' : 'OFF'}
+            </button>
+          </div>
+
+          {/* Reduce Transparency Row */}
+          <div className="p-3.5 rounded-2xl bg-[#090d1f] border-2 border-[#070b16] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div
+                className={`p-2 rounded-xl border-2 border-[#070b16] ${
+                  reduceTransparency ? 'bg-[#a855f7] text-white' : 'bg-[#18214a] text-slate-400'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="font-cartoon text-sm text-white block leading-tight">
+                  Réduire la Transparence
+                </span>
+                <span className="text-xs text-slate-300">
+                  {reduceTransparency ? 'Fonds opaques unis (contraste maximal)' : 'Liquid Glass translucide actif'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={toggleReduceTransparency}
+              className={`px-3 py-1.5 rounded-xl text-xs font-cartoon border-2 border-[#070b16] shadow-[0_2px_0_#070b16] cursor-pointer ${
+                reduceTransparency
+                  ? 'bg-[#a855f7] text-white'
+                  : 'bg-[#18214a] text-slate-300 hover:text-white'
+              }`}
+            >
+              {reduceTransparency ? 'ACTIF' : 'OFF'}
             </button>
           </div>
         </div>
