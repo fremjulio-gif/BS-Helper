@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model PlayerSnapshot {
+  id              String   @id @default(cuid())
+  playerTag       String
+  name            String
+  trophies        Int
+  highestTrophies Int
+  expLevel        Int
+  victories3v3    Int
+  soloVictories   Int
+  duoVictories    Int
+  rankedRank      String?
+  rankedElo       Int?
+  createdAt       DateTime @default(now())
+
+  @@index([playerTag, createdAt])
+}
+
+model BattleRecord {
+  id              String   @id @default(cuid())
+  playerTag       String
+  battleTime      String
+  mode            String
+  map             String?
+  result          String?
+  rank            Int?
+  trophyChange    Int?
+  brawlerName     String
+  brawlerPower    Int
+  brawlerTrophies Int?
+  isStarPlayer    Boolean  @default(false)
+  duration        Int?
+  createdAt       DateTime @default(now())
+
+  @@unique([playerTag, battleTime])
+  @@index([playerTag, brawlerName])
+}
