@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 import { PlayerProfile, BattleLogSummary } from '@/types/brawlstars';
-import { BotMessageSquare, Send, Sparkles } from 'lucide-react';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { CoachMascot, MascotMood } from '../ui/CoachMascot';
+import { soundManager } from '@/lib/sound-manager';
+import { Send, Sparkles } from 'lucide-react';
 
 interface CoachTabProps {
   profile: PlayerProfile;
@@ -13,32 +17,36 @@ interface CoachTabProps {
 interface Message {
   role: 'assistant' | 'user';
   text: string;
+  mood?: MascotMood;
 }
 
 export function CoachTab({ profile, battleSummary, coachTips }: CoachTabProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      text: `Salut ${profile.name} ! Je suis ton coach tactique IA Brawl Stars.
+      mood: 'pumped',
+      text: `Salut ${profile.name} ! Je suis **Coach Bitz**, ton partenaire tactique d'entraînement.
+
 J'ai analysé ton profil (**${profile.trophies.toLocaleString()} trophées**, niveau **${profile.expLevel}**, rang **${profile.rankedRankName || 'DIAMOND I'}**) et tes 25 derniers combats (**${battleSummary.winRate}% de winrate**).
 
-Je suis prêt à t'aider à franchir un palier : choix de Brawler pour la map en cours, stratégie pour ton Spike à 1 200+ trophées, ou plan de rush express. Que veux-tu savoir ?`,
+Dis-moi tout : quel Brawler veux-tu pousser ou sur quel mode veux-tu un plan de jeu ?`,
     },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   const quickPrompts = [
-    '🚀 Quel est le plan le plus rapide pour monter de 1 000 trophées ?',
-    '🌵 Comment pousser mon Spike (1 205 tr) sans risquer de tilt ?',
-    '🗺️ Quel Brawler dois-je choisir sur la rotation actuelle ?',
-    '🛡️ Analyse mes erreurs et points faibles récents',
+    '🚀 Plan de rush express pour +1 000 trophées',
+    '🌵 Stratégie d\'expert pour Spike à 1 200+ tr',
+    '🗺️ Meilleur brawler pour la rotation active',
+    '🛡️ Comment briser une série de défaites ?',
   ];
 
   const handleSend = async (queryText?: string) => {
     const textToSend = queryText || input;
     if (!textToSend.trim() || loading) return;
 
+    soundManager.playTap();
     const userMsg: Message = { role: 'user', text: textToSend };
     setMessages((prev) => [...prev, userMsg]);
     if (!queryText) setInput('');
@@ -52,17 +60,30 @@ Je suis prêt à t'aider à franchir un palier : choix de Brawler pour la map en
       });
       const data = await res.json();
       if (data.reply) {
-        setMessages((prev) => [...prev, { role: 'assistant', text: data.reply }]);
+        soundManager.playSuccess();
+        const replyMood: MascotMood = data.reply.includes('Tilt') || data.reply.includes('Attention') ? 'tilt' : 'proud';
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', text: data.reply, mood: replyMood },
+        ]);
       } else {
         setMessages((prev) => [
           ...prev,
-          { role: 'assistant', text: "Désolé, je n'ai pas pu générer de conseil pour l'instant." },
+          {
+            role: 'assistant',
+            mood: 'neutral',
+            text: "Désolé, je n'ai pas pu générer de conseil pour l'instant.",
+          },
         ]);
       }
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', text: 'Une erreur de connexion est survenue avec le coach IA.' },
+        {
+          role: 'assistant',
+          mood: 'tilt',
+          text: 'Une erreur de connexion est survenue. Vérifiez votre connexion et réessayez.',
+        },
       ]);
     } finally {
       setLoading(false);
@@ -72,36 +93,35 @@ Je suis prêt à t'aider à franchir un palier : choix de Brawler pour la map en
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-          <BotMessageSquare className="w-6 h-6 text-yellow-400" />
-          Coach Tactique & IA Stratégique
+        <h2 className="text-xl sm:text-2xl font-cartoon text-white flex items-center gap-2.5 text-stroke-sm">
+          <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
+            <Sparkles className="w-5 h-5 fill-[#070b16]" />
+          </div>
+          Coach Bitz — Entraîneur Tactique
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400">
-          Analyse vos forces, détecte vos opportunités et vous guide vers vos objectifs de trophées.
+        <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
+          Conseils actionnables basés sur vos vraies statistiques et votre style de jeu.
         </p>
       </div>
 
-      {/* Coach Diagnostic Cards */}
+      {/* Top 3 Diagnostic Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {coachTips.slice(0, 3).map((tip, idx) => (
-          <div
-            key={idx}
-            className="esport-card p-4 rounded-xl border-yellow-500/20 hover:border-yellow-500/40 transition-all"
-          >
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="p-1 rounded bg-yellow-500/20 text-yellow-400">
-                <Sparkles className="w-3.5 h-3.5" />
+          <Card key={idx} topHighlight={true} className="p-4 border-2 border-[#070b16]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="p-1 rounded-lg bg-[#ffc700] text-[#070b16] border border-[#070b16]">
+                <Sparkles className="w-3.5 h-3.5 fill-[#070b16]" />
               </span>
-              <span className="text-xs font-bold text-white truncate">{tip.title}</span>
+              <span className="font-cartoon text-sm text-white truncate">{tip.title}</span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">{tip.message}</p>
-          </div>
+            <p className="text-xs text-slate-300 font-medium leading-relaxed">{tip.message}</p>
+          </Card>
         ))}
       </div>
 
-      {/* Interactive Chat Console */}
-      <div className="esport-card rounded-2xl p-4 sm:p-5 flex flex-col h-[520px]">
-        {/* Messages list */}
+      {/* Interactive Messenger Console */}
+      <Card topHighlight={true} className="p-4 sm:p-5 flex flex-col h-[540px] border-3 border-[#070b16]">
+        {/* Messages feed */}
         <div className="flex-1 overflow-y-auto space-y-4 pr-1">
           {messages.map((msg, i) => (
             <div
@@ -110,21 +130,19 @@ Je suis prêt à t'aider à franchir un palier : choix de Brawler pour la map en
                 msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
               }`}
             >
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
-                  msg.role === 'user'
-                    ? 'bg-slate-700 text-white'
-                    : 'bg-yellow-500 text-black shadow-md shadow-yellow-500/20'
-                }`}
-              >
-                {msg.role === 'user' ? 'MOI' : 'IA'}
-              </div>
+              {msg.role === 'assistant' ? (
+                <CoachMascot mood={msg.mood || 'neutral'} size={44} />
+              ) : (
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-b from-[#ffdc2e] to-[#ffaa00] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] flex items-center justify-center font-cartoon text-[#070b16] text-xs shrink-0">
+                  MOI
+                </div>
+              )}
 
               <div
-                className={`rounded-2xl px-4 py-3 max-w-[85%] text-xs sm:text-sm leading-relaxed ${
+                className={`rounded-2xl px-4 py-3 max-w-[85%] text-xs sm:text-sm leading-relaxed border-2 border-[#070b16] shadow-[0_3px_0_#070b16] ${
                   msg.role === 'user'
-                    ? 'bg-yellow-500/15 text-yellow-200 border border-yellow-500/30'
-                    : 'bg-slate-900/90 text-slate-200 border border-white/10'
+                    ? 'bg-gradient-to-r from-[#00d9ff] to-[#0099b8] text-[#070b16] font-bold'
+                    : 'bg-[#101736] text-slate-100 font-medium'
                 }`}
               >
                 <div className="whitespace-pre-wrap">{msg.text}</div>
@@ -133,48 +151,52 @@ Je suis prêt à t'aider à franchir un palier : choix de Brawler pour la map en
           ))}
 
           {loading && (
-            <div className="flex items-center gap-2 text-xs text-slate-400 italic">
-              <div className="w-2 h-2 rounded-full bg-yellow-400 animate-ping" />
-              Le Coach IA analyse vos données de combat...
+            <div className="flex items-center gap-3">
+              <CoachMascot mood="pumped" size={40} />
+              <div className="bg-[#101736] px-4 py-2.5 rounded-2xl border-2 border-[#070b16] text-xs font-bold text-yellow-300 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#ffc700] animate-ping" />
+                Coach Bitz calcule ta stratégie...
+              </div>
             </div>
           )}
         </div>
 
-        {/* Quick Prompts */}
-        <div className="pt-3 border-t border-white/10 mt-3 flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+        {/* Quick prompt chips */}
+        <div className="pt-3 border-t-2 border-[#070b16]/60 mt-3 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           {quickPrompts.map((prompt, i) => (
             <button
               key={i}
               onClick={() => handleSend(prompt)}
               disabled={loading}
-              className="text-[11px] font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-white/5 whitespace-nowrap cursor-pointer transition-all disabled:opacity-50"
+              className="text-xs font-cartoon bg-[#12183c] hover:bg-[#1a2355] text-slate-200 px-3.5 py-2 rounded-xl border-2 border-[#070b16] shadow-[0_2px_0_#070b16] whitespace-nowrap cursor-pointer transition-transform active:translate-y-0.5 disabled:opacity-50"
             >
               {prompt}
             </button>
           ))}
         </div>
 
-        {/* Chat Input */}
+        {/* Chat input */}
         <div className="pt-2 flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Posez votre question au coach (ex: 'Conseil pour Heist', 'Build Colt')..."
+            placeholder="Pose ta question à Bitz (ex: 'Conseil Heist', 'Build Spike')..."
             disabled={loading}
-            className="flex-1 bg-slate-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
+            className="flex-1 bg-[#0b1029] border-2 border-[#070b16] rounded-2xl px-4 py-3 text-xs sm:text-sm font-bold text-white placeholder-slate-400 focus:outline-none focus:border-[#ffc700]"
           />
-          <button
+          <Button
+            variant="yellow"
+            size="md"
+            icon={<Send className="w-4 h-4 text-[#070b16]" />}
             onClick={() => handleSend()}
             disabled={loading || !input.trim()}
-            className="px-4 py-2.5 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-yellow-500/20 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
           >
-            <Send className="w-4 h-4" />
             <span className="hidden sm:inline">Envoyer</span>
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

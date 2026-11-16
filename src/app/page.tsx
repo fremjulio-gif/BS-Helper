@@ -9,6 +9,8 @@ import { TrophiesTab } from '@/components/tabs/TrophiesTab';
 import { MapsTab } from '@/components/tabs/MapsTab';
 import { BattleLogTab } from '@/components/tabs/BattleLogTab';
 import { CoachTab } from '@/components/tabs/CoachTab';
+import { CoachMascot } from '@/components/ui/CoachMascot';
+import { EmptyState } from '@/components/ui/EmptyState';
 import {
   PlayerProfile,
   StrategyRecommendation,
@@ -17,12 +19,12 @@ import {
   BattleLogSummary,
   BattleItem,
 } from '@/types/brawlstars';
-import { AlertTriangle } from 'lucide-react';
 
 export default function HomePage() {
   const [currentTab, setCurrentTab] = useState<TabType>('overview');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [easyTrophies, setEasyTrophies] = useState<StrategyRecommendation[]>([]);
@@ -34,7 +36,7 @@ export default function HomePage() {
     Array<{ title: string; message: string; priority: 'high' | 'medium' | 'low'; icon: string }>
   >([]);
   const [progression, setProgression] = useState<
-    Array<{ date: string; trophies: number; rankedElo?: number | null }>
+    Array<{ date: string; trophies: number; rankedElo?: number | null; fullDate?: string }>
   >([]);
   const [recentBattles, setRecentBattles] = useState<BattleItem[]>([]);
 
@@ -54,6 +56,7 @@ export default function HomePage() {
       setCoachTips(data.coachTips || []);
       setProgression(data.progression || []);
       setRecentBattles(data.recentBattles || []);
+      setLastUpdated(new Date());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Une erreur inattendue est survenue.';
       setError(msg);
@@ -67,8 +70,13 @@ export default function HomePage() {
   }, [loadData]);
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex flex-col selection:bg-yellow-500 selection:text-black">
-      <Navbar profile={profile} loading={loading} onRefresh={loadData} />
+    <div className="min-h-screen flex flex-col">
+      <Navbar
+        profile={profile}
+        loading={loading}
+        onRefresh={loadData}
+        lastUpdated={lastUpdated}
+      />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
         <DesktopNav
@@ -78,27 +86,26 @@ export default function HomePage() {
         />
 
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-950/40 border border-red-500/40 flex items-start gap-3 text-red-200">
-            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-bold text-sm text-red-300">Erreur de chargement</h4>
-              <p className="text-xs text-red-400/90 mt-1">{error}</p>
-              <button
-                onClick={loadData}
-                className="mt-3 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-xs font-bold text-red-300 transition-all cursor-pointer"
-              >
-                Réessayer
-              </button>
-            </div>
-          </div>
+          <EmptyState
+            title="Connexion interrompue"
+            description={error}
+            mood="tilt"
+            onRetry={loadData}
+            retryLabel="Réessayer la connexion"
+            className="my-8"
+          />
         )}
 
         {loading && !profile ? (
           <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <div className="w-12 h-12 rounded-full border-4 border-yellow-500/20 border-t-yellow-400 animate-spin" />
+            <CoachMascot mood="pumped" size={96} className="animate-bounce" />
             <div className="text-center">
-              <p className="font-bold text-white text-base">Chargement de votre compte Brawl Stars...</p>
-              <p className="text-xs text-slate-400 mt-1">Analyse des 25 derniers combats et des maps actives</p>
+              <h3 className="font-cartoon text-xl text-white text-stroke-sm">
+                Synchronisation de Brawl Stars...
+              </h3>
+              <p className="text-xs text-slate-300 font-bold mt-1">
+                Coach Bitz analyse vos 25 derniers combats et vos maps
+              </p>
             </div>
           </div>
         ) : profile && battleSummary ? (
@@ -135,11 +142,30 @@ export default function HomePage() {
         ) : null}
       </main>
 
+      {/* Mobile Bottom Navigation */}
       <BottomNav
         currentTab={currentTab}
         onChangeTab={setCurrentTab}
         easyCount={easyTrophies.length}
       />
+
+      {/* Disclaimer Footer (Supercell Fan Content Policy) */}
+      <footer className="w-full border-t-2 border-[#070b16]/60 bg-[#0d122c]/90 py-5 text-center px-4 text-xs text-slate-400 font-medium">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-[11px] leading-relaxed">
+            Ce contenu n&apos;est pas affilié, soutenu, sponsorisé ou spécifiquement approuvé par Supercell
+            et Supercell n&apos;en est pas responsable. Pour plus d&apos;informations, consultez le Règlement sur les Contenus de Fans de Supercell.
+          </p>
+          <a
+            href="https://github.com/fremjulio-gif/BS-Helper"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-bold text-yellow-400 hover:text-yellow-300 underline shrink-0"
+          >
+            GitHub fremjulio-gif/BS-Helper
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

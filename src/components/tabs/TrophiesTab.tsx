@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 import { PlayerBrawler, StrategyRecommendation } from '@/types/brawlstars';
-import { Trophy, Zap, ArrowUpRight, Shield } from 'lucide-react';
+import { Card } from '../ui/Card';
+import { Chip } from '../ui/Chip';
+import { ProgressBar } from '../ui/ProgressBar';
+import { BrawlerAvatar } from '../ui/BrawlerAvatar';
+import { Trophy, Zap, ArrowUpRight, ShieldCheck, Search } from 'lucide-react';
 
 interface TrophiesTabProps {
   brawlers: PlayerBrawler[];
@@ -10,13 +14,12 @@ interface TrophiesTabProps {
 }
 
 export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
-  const [filter, setFilter] = useState<'all' | 'easy' | 'tilt'>('easy');
+  const [filter, setFilter] = useState<'easy' | 'tilt' | 'all'>('easy');
   const [search, setSearch] = useState('');
 
   const tiltList = easyTrophies.filter((r) => r.type === 'tilt_recovery');
   const boostList = easyTrophies.filter((r) => r.type === 'easy_trophies');
 
-  // Filter all brawlers
   const filteredBrawlers = brawlers
     .filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
@@ -36,189 +39,211 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-yellow-400" />
+          <h2 className="text-xl sm:text-2xl font-cartoon text-white flex items-center gap-2.5 text-stroke-sm">
+            <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
+              <Trophy className="w-5 h-5 fill-[#070b16]" />
+            </div>
             Accélérateur de Trophées
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Identifiez instantanément où engranger un maximum de trophées avec le moins de risque.
+          <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
+            Repérez instantanément les Brawlers les plus rentables à monter sans résistance.
           </p>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-white/10 self-stretch sm:self-auto">
-          <button
+        {/* Filter Chips */}
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          <Chip
+            label="Trophées Faciles"
+            count={boostList.length}
+            active={filter === 'easy'}
             onClick={() => setFilter('easy')}
-            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filter === 'easy'
-                ? 'bg-yellow-500 text-black shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Trophées Faciles ({boostList.length})
-          </button>
-          <button
+            tone="yellow"
+          />
+          <Chip
+            label="Tilt Recovery"
+            count={tiltList.length}
+            active={filter === 'tilt'}
             onClick={() => setFilter('tilt')}
-            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filter === 'tilt'
-                ? 'bg-red-500 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Tilt Recovery ({tiltList.length})
-          </button>
-          <button
+            tone="red"
+          />
+          <Chip
+            label="Tout le Roster"
+            count={brawlers.length}
+            active={filter === 'all'}
             onClick={() => setFilter('all')}
-            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              filter === 'all'
-                ? 'bg-cyan-500 text-black shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Tout ({brawlers.length})
-          </button>
+            tone="cyan"
+          />
         </div>
       </div>
 
-      {/* Recommended Strategy Cards */}
+      {/* Easy Trophies List */}
       {filter === 'easy' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {boostList.map((rec) => (
-            <div
-              key={rec.brawlerId}
-              className="esport-card rounded-2xl p-4 flex flex-col justify-between border-yellow-500/20 hover:border-yellow-500/50 transition-all"
-            >
-              <div className="flex items-start gap-3.5">
-                <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-800 border border-yellow-500/30 shrink-0">
-                  <img
-                    src={`https://cdn.brawlify.com/brawlers/borderless/${rec.brawlerId}.png`}
-                    alt={rec.brawlerName}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://cdn.brawlify.com/brawlers/emoji/16000000.png';
-                    }}
-                  />
-                  <span className="absolute bottom-0 right-0 bg-yellow-500 text-black font-black text-[9px] px-1 rounded-tl">
-                    P{rec.power}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-black text-sm text-white truncate">{rec.brawlerName}</span>
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      {rec.difficulty}
-                    </span>
+          {boostList.map((rec) => {
+            const nextMilestone = rec.currentTrophies < 300 ? 300 : 500;
+            const progressPercent = Math.round((rec.currentTrophies / nextMilestone) * 100);
+
+            return (
+              <Card
+                key={rec.brawlerId}
+                topHighlight={true}
+                className="flex flex-col justify-between border-3 border-[#070b16]"
+              >
+                <div>
+                  <div className="flex items-start gap-3.5">
+                    <BrawlerAvatar
+                      id={rec.brawlerId}
+                      name={rec.brawlerName}
+                      power={rec.power}
+                      size="lg"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-cartoon text-base text-white truncate">
+                          {rec.brawlerName}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon uppercase bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                          {rec.difficulty}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="font-cartoon text-sm text-[#ffc700]">
+                          {rec.currentTrophies} 🏆
+                        </span>
+                        <span className="text-slate-400 font-bold text-xs">&rarr;</span>
+                        <span className="font-cartoon text-xs text-slate-200">
+                          Palier {nextMilestone} 🏆
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs font-bold text-yellow-400">
-                      {rec.currentTrophies} 🏆
-                    </span>
-                    <span className="text-slate-500 text-xs">&rarr;</span>
-                    <span className="text-xs font-bold text-slate-300">
-                      Objectif {rec.targetTrophies} 🏆
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
+
+                  <p className="text-xs text-slate-300 mt-3 font-medium leading-relaxed bg-[#101636] p-2.5 rounded-xl border border-white/5">
                     {rec.reason}
                   </p>
                 </div>
-              </div>
 
-              <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5" /> +
-                  {rec.targetTrophies ? rec.targetTrophies - rec.currentTrophies : 200} trophées
-                  estimés
-                </span>
-                <span className="text-[10px] text-slate-500">Bots garantis sous 300 tr</span>
-              </div>
-            </div>
-          ))}
+                <div className="mt-4 pt-3 border-t-2 border-[#070b16]/60">
+                  <ProgressBar
+                    value={progressPercent}
+                    label="Progression vers palier"
+                    subLabel={`${progressPercent}%`}
+                    color="yellow"
+                    height="sm"
+                  />
+                  <div className="flex items-center justify-between text-[11px] font-bold text-[#4ade80] mt-2">
+                    <span className="flex items-center gap-1">
+                      <Zap className="w-3.5 h-3.5 fill-[#4ade80]" /> +
+                      {nextMilestone - rec.currentTrophies} trophées estimés
+                    </span>
+                    <span className="text-slate-400 text-[10px]">Matchmaking accessible</span>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
 
+      {/* Tilt Recovery List */}
       {filter === 'tilt' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tiltList.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-slate-400">
-              <Shield className="w-10 h-10 text-emerald-400 mx-auto mb-2 opacity-80" />
-              <p className="font-bold text-white">Aucun Brawler en tilt majeur !</p>
-              <p className="text-xs mt-1">Tous vos Brawlers sont proches de leur record personnel.</p>
+            <div className="col-span-full brawl-card p-10 text-center text-slate-300">
+              <ShieldCheck className="w-12 h-12 text-[#22c55e] mx-auto mb-2" />
+              <h3 className="font-cartoon text-xl text-white">Aucun Brawler en tilt majeur !</h3>
+              <p className="text-xs text-slate-300 mt-1 max-w-sm mx-auto font-medium">
+                Félicitations, tous vos Brawlers sont proches de leur niveau record personnel.
+              </p>
             </div>
           ) : (
             tiltList.map((rec) => {
               const diff = (rec.targetTrophies || 0) - rec.currentTrophies;
+              const progressPercent = Math.round(
+                (rec.currentTrophies / (rec.targetTrophies || 1)) * 100
+              );
+
               return (
-                <div
+                <Card
                   key={rec.brawlerId}
-                  className="esport-card rounded-2xl p-4 flex flex-col justify-between border-red-500/20 hover:border-red-500/50 transition-all"
+                  topHighlight={true}
+                  className="flex flex-col justify-between border-3 border-[#070b16]"
                 >
-                  <div className="flex items-start gap-3.5">
-                    <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-800 border border-red-500/30 shrink-0">
-                      <img
-                        src={`https://cdn.brawlify.com/brawlers/borderless/${rec.brawlerId}.png`}
-                        alt={rec.brawlerName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            'https://cdn.brawlify.com/brawlers/emoji/16000000.png';
-                        }}
+                  <div>
+                    <div className="flex items-start gap-3.5">
+                      <BrawlerAvatar
+                        id={rec.brawlerId}
+                        name={rec.brawlerName}
+                        power={rec.power}
+                        size="lg"
                       />
-                      <span className="absolute bottom-0 right-0 bg-red-500 text-white font-black text-[9px] px-1 rounded-tl">
-                        P{rec.power}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="font-black text-sm text-white truncate">
-                          {rec.brawlerName}
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-red-500/20 text-red-400 border border-red-500/30">
-                          -{diff} tr
-                        </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-cartoon text-base text-white truncate">
+                            {rec.brawlerName}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon uppercase bg-[#ef4444] text-white border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                            -{diff} tr
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="font-cartoon text-sm text-[#f87171]">
+                            {rec.currentTrophies} 🏆
+                          </span>
+                          <span className="text-slate-400 font-bold text-xs">&rarr;</span>
+                          <span className="font-cartoon text-xs text-[#ffc700]">
+                            Record {rec.targetTrophies} 🏆
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs font-bold text-red-400">
-                          {rec.currentTrophies} 🏆
-                        </span>
-                        <span className="text-slate-500 text-xs">&rarr;</span>
-                        <span className="text-xs font-bold text-yellow-400">
-                          Record {rec.targetTrophies} 🏆
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">
-                        {rec.reason}
-                      </p>
                     </div>
+
+                    <p className="text-xs text-slate-300 mt-3 font-medium leading-relaxed bg-[#101636] p-2.5 rounded-xl border border-white/5">
+                      {rec.reason}
+                    </p>
                   </div>
 
-                  <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                    <span className="text-yellow-400 font-bold flex items-center gap-1">
-                      <ArrowUpRight className="w-3.5 h-3.5" /> Récupérez {diff} trophées
-                    </span>
-                    <span className="text-[10px] text-slate-500">Niveau déjà atteint</span>
+                  <div className="mt-4 pt-3 border-t-2 border-[#070b16]/60">
+                    <ProgressBar
+                      value={progressPercent}
+                      label="Niveau record"
+                      subLabel={`${rec.currentTrophies} / ${rec.targetTrophies}`}
+                      color="red"
+                      height="sm"
+                    />
+                    <div className="flex items-center justify-between text-[11px] font-bold text-[#ffc700] mt-2">
+                      <span className="flex items-center gap-1">
+                        <ArrowUpRight className="w-3.5 h-3.5" /> Récupérez {diff} trophées
+                      </span>
+                      <span className="text-slate-400 text-[10px]">Palier déjà maîtrisé</span>
+                    </div>
                   </div>
-                </div>
+                </Card>
               );
             })
           )}
         </div>
       )}
 
-      {/* All Brawlers Table/Grid */}
-      <div className="esport-card rounded-2xl p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-          <h3 className="font-extrabold text-base text-white">
-            Roster Complet ({filteredBrawlers.length} Brawlers)
-          </h3>
-          <input
-            type="text"
-            placeholder="Rechercher un brawler (ex: Spike, Colt)..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-yellow-500"
-          />
+      {/* Complete Roster Grid */}
+      <Card topHighlight={true} className="p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <h3 className="font-cartoon text-lg text-white">
+              Votre Collection ({filteredBrawlers.length} Brawlers)
+            </h3>
+            <p className="text-xs text-slate-300">Tous vos Brawlers débloqués avec leur palier</p>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Rechercher un brawler (Spike, Colt)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0e142e] border-2 border-[#070b16] text-xs font-bold text-white placeholder-slate-400 focus:outline-none focus:border-[#ffc700]"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -227,48 +252,31 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
             return (
               <div
                 key={brawler.id}
-                className="bg-slate-900/60 border border-white/5 hover:border-yellow-500/30 rounded-xl p-3 flex flex-col items-center text-center transition-all group"
+                className="brawl-card p-3 flex flex-col items-center text-center transition-transform hover:-translate-y-1"
               >
-                <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-800 mb-2 border border-white/10">
-                  <img
-                    src={`https://cdn.brawlify.com/brawlers/borderless/${brawler.id}.png`}
-                    alt={brawler.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://cdn.brawlify.com/brawlers/emoji/16000000.png';
-                    }}
-                  />
-                  <span className="absolute bottom-0 right-0 bg-yellow-500 text-black text-[9px] font-black px-1 rounded-tl">
-                    P{brawler.power}
-                  </span>
-                </div>
-                <span className="font-bold text-xs text-white truncate max-w-full">
+                <BrawlerAvatar
+                  id={brawler.id}
+                  name={brawler.name}
+                  power={brawler.power}
+                  hasHypercharge={Boolean(brawler.hyperCharges && brawler.hyperCharges.length > 0)}
+                  size="md"
+                  className="mb-2"
+                />
+                <span className="font-cartoon text-xs text-white truncate max-w-full">
                   {brawler.name}
                 </span>
-                <span className="text-xs font-black text-yellow-400 mt-0.5">
+                <span className="font-cartoon text-xs text-[#ffc700] mt-0.5">
                   {brawler.trophies} 🏆
                 </span>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <span className="text-[10px] text-slate-400">
-                    Max: {brawler.highestTrophies}
-                  </span>
-                  {deficit > 0 && (
-                    <span className="text-[10px] font-bold text-red-400">
-                      (-{deficit})
-                    </span>
-                  )}
+                <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-slate-400">
+                  <span>Max: {brawler.highestTrophies}</span>
+                  {deficit > 0 && <span className="text-[#f87171]">(-{deficit})</span>}
                 </div>
-                {brawler.currentWinStreak && brawler.currentWinStreak > 0 ? (
-                  <span className="text-[9px] text-emerald-400 font-bold mt-1 bg-emerald-500/10 px-1.5 py-0.2 rounded">
-                    🔥 {brawler.currentWinStreak} win streak
-                  </span>
-                ) : null}
               </div>
             );
           })}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

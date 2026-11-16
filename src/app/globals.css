@@ -1,53 +1,218 @@
 @import "tailwindcss";
 
+@theme {
+  --font-display: var(--font-lilita), cursive, sans-serif;
+  --font-sans: var(--font-nunito), -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --color-brawl-yellow: #ffc700;
+  --color-brawl-yellow-dark: #c98800;
+  --color-brawl-cyan: #00d9ff;
+  --color-brawl-cyan-dark: #0099b8;
+  --color-brawl-green: #22c55e;
+  --color-brawl-green-dark: #15803d;
+  --color-brawl-red: #ef4444;
+  --color-brawl-red-dark: #b91c1c;
+  --color-brawl-orange: #f97316;
+  --color-brawl-purple: #a855f7;
+  --color-brawl-dark: #070b16;
+  --color-brawl-card: #182046;
+  --color-brawl-card-dark: #111736;
+}
+
 :root {
-  --background: #090d16;
-  --foreground: #f1f5f9;
+  --brawl-outline: #070b16;
+  --brawl-shadow: #060913;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background-color: #171347;
+  background-image: 
+    radial-gradient(circle at 50% 0%, #2f1d7d 0%, #1c1556 50%, #120e3a 100%),
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  background-attachment: fixed;
+  color: #f8fafc;
+  font-family: var(--font-nunito), sans-serif;
   overflow-x: hidden;
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 
-/* Custom scrollbar */
+/* Heading styles with cartoon punch */
+h1, h2, h3, .font-cartoon {
+  font-family: var(--font-lilita), cursive, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* 3D Cartoon Button */
+.brawl-btn {
+  font-family: var(--font-lilita), cursive, sans-serif;
+  border: 3px solid #070b16;
+  border-radius: 1rem;
+  box-shadow: 0 5px 0 #070b16;
+  position: relative;
+  transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  text-transform: uppercase;
+}
+
+.brawl-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+}
+
+.brawl-btn:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #070b16;
+}
+
+.brawl-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Button Variants */
+.brawl-btn-yellow {
+  background: linear-gradient(180deg, #ffdc2e 0%, #ffaa00 100%);
+  color: #070b16;
+}
+.brawl-btn-yellow:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffe654 0%, #ffb700 100%);
+}
+
+.brawl-btn-cyan {
+  background: linear-gradient(180deg, #42eeff 0%, #00b8db 100%);
+  color: #070b16;
+}
+.brawl-btn-cyan:hover:not(:disabled) {
+  background: linear-gradient(180deg, #6bf3ff 0%, #00cbef 100%);
+}
+
+.brawl-btn-green {
+  background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%);
+  color: #ffffff;
+}
+
+.brawl-btn-red {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+  color: #ffffff;
+}
+
+.brawl-btn-dark {
+  background: linear-gradient(180deg, #252e5a 0%, #151c3c 100%);
+  color: #f8fafc;
+}
+
+/* 3D Cartoon Card */
+.brawl-card {
+  background: linear-gradient(180deg, #1c244f 0%, #12183b 100%);
+  border: 3px solid #070b16;
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 0 #070b16;
+  position: relative;
+}
+
+.brawl-card-toplight::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 1rem 1rem 0 0;
+  pointer-events: none;
+}
+
+/* Cartoon Text Stroke */
+.text-stroke-sm {
+  text-shadow: 
+    -1.5px -1.5px 0 #070b16,  
+     1.5px -1.5px 0 #070b16,
+    -1.5px  1.5px 0 #070b16,
+     1.5px  1.5px 0 #070b16,
+     0px 3px 0 #070b16;
+}
+
+.text-stroke-md {
+  text-shadow: 
+    -2px -2px 0 #070b16,  
+     2px -2px 0 #070b16,
+    -2px  2px 0 #070b16,
+     2px  2px 0 #070b16,
+     0px 4px 0 #070b16;
+}
+
+/* Striped Progress Bar */
+.brawl-progress-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.2) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.2) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 24px 24px;
+  animation: brawl-stripes 2s linear infinite;
+}
+
+@keyframes brawl-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 24px 0;
+  }
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1322;
-}
-::-webkit-scrollbar-thumb {
-  background: #232d42;
+  background: #0d122c;
   border-radius: 4px;
 }
+::-webkit-scrollbar-thumb {
+  background: #2a356c;
+  border-radius: 4px;
+  border: 2px solid #0d122c;
+}
 ::-webkit-scrollbar-thumb:hover {
-  background: #3b4866;
+  background: #3b4b96;
 }
 
-/* Glassmorphism card utility */
-.esport-card {
-  background: linear-gradient(135deg, rgba(20, 27, 45, 0.75) 0%, rgba(13, 19, 34, 0.85) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.esport-card:hover {
-  border-color: rgba(250, 204, 21, 0.3);
-}
-
-/* Trophy gold glow */
-.glow-gold {
-  box-shadow: 0 0 25px -5px rgba(250, 204, 21, 0.25);
-}
-
-/* Diamond glow */
-.glow-diamond {
-  box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.3);
+/* Accessibility: Prefers Reduced Motion Fallback */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+    scroll-behavior: auto !important;
+  }
+  .brawl-btn:active {
+    transform: none !important;
+  }
+  .brawl-progress-striped {
+    animation: none !important;
+  }
 }

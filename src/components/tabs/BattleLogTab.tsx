@@ -1,8 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { BattleLogSummary, BattleItem, BattlePlayer } from '@/types/brawlstars';
-import { Swords, Star, Trophy } from 'lucide-react';
+import { Card } from '../ui/Card';
+import { Chip } from '../ui/Chip';
+import { BrawlerAvatar } from '../ui/BrawlerAvatar';
+import { Swords, Star, CheckCircle2, XCircle } from 'lucide-react';
 
 interface BattleLogTabProps {
   summary: BattleLogSummary;
@@ -11,121 +14,124 @@ interface BattleLogTabProps {
 }
 
 export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProps) {
+  const [selectedMode, setSelectedMode] = useState<string>('all');
   const normalizedTag = myTag.trim().toUpperCase().replace('#', '');
+
+  const availableModes = Array.from(
+    new Set(recentBattles.map((b) => b.event.mode || b.battle.mode || 'other'))
+  );
+
+  const filteredBattles = recentBattles.filter((b) => {
+    if (selectedMode === 'all') return true;
+    const mode = b.event.mode || b.battle.mode;
+    return mode === selectedMode;
+  });
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-          <Swords className="w-6 h-6 text-yellow-400" />
-          Analyse des 25 Derniers Combats
+        <h2 className="text-xl sm:text-2xl font-cartoon text-white flex items-center gap-2.5 text-stroke-sm">
+          <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
+            <Swords className="w-5 h-5 fill-[#070b16]" />
+          </div>
+          Journal des 25 Derniers Combats
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400">
-          Statistiques de performance, rentabilité en trophées et répartition par mode.
+        <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
+          Analyse détaillée de votre performance, rentabilité en trophées et distinctions MVP.
         </p>
       </div>
 
-      {/* Summary KPI Bar */}
+      {/* KPI Overview Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="esport-card p-4 rounded-xl">
-          <span className="text-xs font-bold text-slate-400 uppercase">Taux de Victoire</span>
-          <div className="flex items-center gap-2 mt-1.5">
+        <Card topHighlight={true} className="p-3.5">
+          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+            Victoires
+          </span>
+          <div className="flex items-baseline gap-2 mt-1">
             <span
-              className={`text-2xl font-black ${
-                summary.winRate >= 55 ? 'text-emerald-400' : 'text-red-400'
+              className={`font-cartoon text-2xl ${
+                summary.winRate >= 55 ? 'text-[#4ade80]' : 'text-[#f87171]'
               }`}
             >
               {summary.winRate}%
             </span>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs font-bold text-slate-300">
               ({summary.victories}V / {summary.defeats}D)
             </span>
           </div>
-        </div>
+        </Card>
 
-        <div className="esport-card p-4 rounded-xl">
-          <span className="text-xs font-bold text-slate-400 uppercase">Bilan Trophées</span>
-          <div className="flex items-center gap-2 mt-1.5">
+        <Card topHighlight={true} className="p-3.5">
+          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+            Bilan Trophées
+          </span>
+          <div className="flex items-baseline gap-2 mt-1">
             <span
-              className={`text-2xl font-black ${
-                summary.trophyDelta >= 0 ? 'text-yellow-400' : 'text-red-400'
+              className={`font-cartoon text-2xl ${
+                summary.trophyDelta >= 0 ? 'text-[#ffc700]' : 'text-[#f87171]'
               }`}
             >
               {summary.trophyDelta > 0 ? `+${summary.trophyDelta}` : summary.trophyDelta} 🏆
             </span>
           </div>
-        </div>
+        </Card>
 
-        <div className="esport-card p-4 rounded-xl">
-          <span className="text-xs font-bold text-slate-400 uppercase">Joueur Étoile (MVP)</span>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-2xl font-black text-amber-300">
+        <Card topHighlight={true} className="p-3.5">
+          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+            Joueur Étoile (MVP)
+          </span>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="font-cartoon text-2xl text-[#ffc700]">
               {summary.starPlayerCount} fois
             </span>
-            <span className="text-xs text-slate-400">({summary.starPlayerRate}%)</span>
+            <span className="text-xs font-bold text-slate-300">({summary.starPlayerRate}%)</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="esport-card p-4 rounded-xl">
-          <span className="text-xs font-bold text-slate-400 uppercase">Statut Dynamique</span>
-          <div className="flex items-center gap-2 mt-1.5">
+        <Card topHighlight={true} className="p-3.5">
+          <span className="text-[10px] font-cartoon text-slate-300 uppercase tracking-wide">
+            État Dynamique
+          </span>
+          <div className="flex items-center gap-1.5 mt-1.5">
             {summary.winRate >= 60 ? (
-              <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                Momentum Positif 🔥
+              <span className="px-2 py-0.5 rounded-lg text-xs font-cartoon bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                Momentum 🔥
               </span>
             ) : (
-              <span className="px-2 py-0.5 rounded text-xs font-bold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                En Récupération 🛡️
+              <span className="px-2 py-0.5 rounded-lg text-xs font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                Stabilité 🛡️
               </span>
             )}
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Mode Performance Grid */}
-      <div className="esport-card p-5 rounded-2xl">
-        <h3 className="font-extrabold text-base text-white mb-3 flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-yellow-400" />
-          Rendement par Mode de Jeu
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {Object.entries(summary.modeStats).map(([mode, stats]) => (
-            <div
-              key={mode}
-              className="bg-slate-900/80 border border-white/5 rounded-xl p-3 flex items-center justify-between"
-            >
-              <div>
-                <span className="text-xs font-bold text-white capitalize block">
-                  {mode.replace(/([A-Z])/g, ' $1')}
-                </span>
-                <span className="text-[11px] text-slate-400">
-                  {stats.wins}V sur {stats.total} parties
-                </span>
-              </div>
-              <div className="text-right">
-                <span
-                  className={`text-base font-black ${
-                    stats.winRate >= 60
-                      ? 'text-emerald-400'
-                      : stats.winRate >= 40
-                      ? 'text-yellow-400'
-                      : 'text-red-400'
-                  }`}
-                >
-                  {stats.winRate}%
-                </span>
-                <span className="text-[9px] text-slate-500 block">winrate</span>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Mode Filter Chips */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <Chip
+          label="Tous les modes"
+          count={recentBattles.length}
+          active={selectedMode === 'all'}
+          onClick={() => setSelectedMode('all')}
+          tone="cyan"
+        />
+        {availableModes.map((mode) => (
+          <Chip
+            key={mode}
+            label={mode.replace(/([A-Z])/g, ' $1')}
+            count={recentBattles.filter((b) => (b.event.mode || b.battle.mode) === mode).length}
+            active={selectedMode === mode}
+            onClick={() => setSelectedMode(mode)}
+            tone="yellow"
+          />
+        ))}
       </div>
 
-      {/* Battle Items List */}
-      <div className="esport-card p-5 rounded-2xl">
-        <h3 className="font-extrabold text-base text-white mb-4">Dernières Parties Jouées</h3>
+      {/* Battles Timeline */}
+      <Card topHighlight={true} className="p-4 sm:p-6">
+        <h3 className="font-cartoon text-lg text-white mb-4">Historique des Combats</h3>
         <div className="space-y-3">
-          {recentBattles.map((item, index) => {
+          {filteredBattles.map((item, index) => {
             const battle = item.battle;
             let myPlayer: BattlePlayer | null = null;
 
@@ -151,82 +157,83 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
             return (
               <div
                 key={index}
-                className={`p-3.5 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all ${
+                className={`p-3.5 sm:p-4 rounded-2xl border-3 border-[#070b16] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_0_#070b16] transition-transform hover:-translate-y-0.5 ${
                   isWin
-                    ? 'bg-emerald-950/20 border-emerald-500/20'
-                    : 'bg-red-950/15 border-red-500/20'
+                    ? 'bg-gradient-to-r from-[#173a2a] to-[#122822]'
+                    : 'bg-gradient-to-r from-[#381a24] to-[#25131b]'
                 }`}
               >
-                {/* Left: Mode, Map, Brawler */}
+                {/* Left: Avatar + Details */}
                 <div className="flex items-center gap-3">
                   {myPlayer && (
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-slate-800 border border-white/10 shrink-0">
-                      <img
-                        src={`https://cdn.brawlify.com/brawlers/borderless/${myPlayer.brawler.id}.png`}
-                        alt={myPlayer.brawler.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            'https://cdn.brawlify.com/brawlers/emoji/16000000.png';
-                        }}
-                      />
-                      <span className="absolute bottom-0 right-0 bg-yellow-500 text-black text-[8px] font-black px-1 rounded-tl">
-                        P{myPlayer.brawler.power}
-                      </span>
-                    </div>
+                    <BrawlerAvatar
+                      id={myPlayer.brawler.id}
+                      name={myPlayer.brawler.name}
+                      power={myPlayer.brawler.power}
+                      size="md"
+                    />
                   )}
 
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white capitalize">
+                      <span className="font-cartoon text-sm text-white capitalize">
                         {item.event.mode || battle.mode}
                       </span>
                       {item.event.map && (
-                        <span className="text-[11px] text-slate-400">({item.event.map})</span>
+                        <span className="text-xs text-slate-300 font-medium">({item.event.map})</span>
                       )}
                       {isStarPlayer && (
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-yellow-500 text-black flex items-center gap-1">
-                          <Star className="w-2.5 h-2.5 fill-black" /> MVP
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] flex items-center gap-1">
+                          <Star className="w-3 h-3 fill-[#070b16]" /> MVP
                         </span>
                       )}
                     </div>
-                    <span className="text-xs text-slate-300 font-semibold mt-0.5 block">
+                    <span className="font-bold text-xs text-slate-300 mt-0.5 block">
                       {myPlayer ? myPlayer.brawler.name : 'Brawler'}
                       {typeof battle.rank === 'number' ? ` • Rang #${battle.rank}` : ''}
                     </span>
                   </div>
                 </div>
 
-                {/* Right: Trophy Change & Result */}
+                {/* Right: Trophy change + Win/Loss status */}
                 <div className="flex items-center gap-3 self-end sm:self-center">
                   {typeof battle.trophyChange === 'number' && (
                     <span
-                      className={`text-sm font-black ${
+                      className={`font-cartoon text-base text-stroke-sm ${
                         battle.trophyChange > 0
-                          ? 'text-emerald-400'
+                          ? 'text-[#4ade80]'
                           : battle.trophyChange < 0
-                          ? 'text-red-400'
-                          : 'text-slate-400'
+                          ? 'text-[#f87171]'
+                          : 'text-slate-300'
                       }`}
                     >
                       {battle.trophyChange > 0 ? `+${battle.trophyChange}` : battle.trophyChange} 🏆
                     </span>
                   )}
-                  <span
-                    className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase ${
-                      isWin
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
+
+                  <div
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-[#070b16] shadow-[0_2px_0_#070b16] font-cartoon text-xs uppercase ${
+                      isWin ? 'bg-[#22c55e] text-[#070b16]' : 'bg-[#ef4444] text-white'
                     }`}
                   >
-                    {isWin ? 'Victoire' : 'Défaite'}
-                  </span>
+                    {isWin ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 stroke-[2.5px]" />
+                        <span>Victoire</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4 stroke-[2.5px]" />
+                        <span>Défaite</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

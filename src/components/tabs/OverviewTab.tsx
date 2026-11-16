@@ -1,7 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PlayerProfile, BattleLogSummary } from '@/types/brawlstars';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { CoachMascot } from '../ui/CoachMascot';
+import { BrawlerAvatar } from '../ui/BrawlerAvatar';
+import { TrophyCounter } from '../ui/TrophyCounter';
+import { triggerTrophyConfetti } from '../ui/Confetti';
 import {
   Trophy,
   Users,
@@ -9,6 +15,8 @@ import {
   Award,
   TrendingUp,
   Sparkles,
+  ArrowRight,
+  PartyPopper,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -22,7 +30,7 @@ import {
 interface OverviewTabProps {
   profile: PlayerProfile;
   battleSummary: BattleLogSummary;
-  progression: Array<{ date: string; trophies: number; rankedElo?: number | null }>;
+  progression: Array<{ date: string; trophies: number; rankedElo?: number | null; fullDate?: string }>;
   coachTips: Array<{ title: string; message: string; priority: 'high' | 'medium' | 'low'; icon: string }>;
   onGoToCoach: () => void;
   onGoToRush: () => void;
@@ -36,204 +44,266 @@ export function OverviewTab({
   onGoToCoach,
   onGoToRush,
 }: OverviewTabProps) {
+  const [period, setPeriod] = useState<'24h' | '7d' | 'all'>('all');
   const topTip = coachTips[0];
 
-  // If progression has less than 2 items, add current profile as first point for display
-  const chartData =
-    progression.length > 1
-      ? progression
-      : [
-          { date: 'Initial', trophies: profile.trophies - 30 },
-          { date: 'En direct', trophies: profile.trophies },
-        ];
+  // Filter progression according to period
+  const filterProgressionData = () => {
+    if (progression.length <= 1) {
+      return [
+        { date: 'Début', trophies: Math.max(0, profile.trophies - 40) },
+        { date: 'Maintenant', trophies: profile.trophies },
+      ];
+    }
+    if (period === '24h') {
+      return progression.slice(-10);
+    }
+    if (period === '7d') {
+      return progression.slice(-25);
+    }
+    return progression;
+  };
+
+  const chartData = filterProgressionData();
+
+  const handleHeroCelebration = () => {
+    triggerTrophyConfetti();
+  };
 
   return (
     <div className="space-y-6">
-      {/* Coach Action Banner */}
-      {topTip && (
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-yellow-500/15 via-slate-900 to-cyan-500/10 border border-yellow-500/30 p-4 sm:p-5 shadow-xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3.5">
-              <div className="p-2.5 rounded-xl bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 shrink-0">
-                <Sparkles className="w-5 h-5" />
+      {/* Hero Action Banner with Coach Bitz Mascot */}
+      <div className="brawl-card p-5 sm:p-6 bg-gradient-to-r from-[#2a1d68] via-[#1a2356] to-[#12193e] border-3 border-[#070b16] relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative z-10">
+          <div className="flex items-start gap-4">
+            <CoachMascot
+              mood={battleSummary.winRate < 45 ? 'tilt' : profile.trophies >= profile.highestTrophies ? 'proud' : 'pumped'}
+              size={68}
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-lg text-[10px] font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                  Coach Bitz
+                </span>
+                <span className="text-xs font-bold text-yellow-300">
+                  {battleSummary.winRate >= 60 ? '🔥 Session en feu' : '🎯 Objectif Trophées'}
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-yellow-400">
-                    Conseil Coach Prioritaire
-                  </span>
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-yellow-500 text-black">
-                    IA
-                  </span>
-                </div>
-                <h3 className="text-base sm:text-lg font-black text-white mt-0.5">{topTip.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">{topTip.message}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <button
-                onClick={onGoToCoach}
-                className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-extrabold text-xs sm:text-sm transition-all shadow-lg shadow-yellow-500/20 cursor-pointer text-center"
-              >
-                Parler au Coach
-              </button>
+              <h3 className="font-cartoon text-lg sm:text-2xl text-white mt-1 text-stroke-sm">
+                {topTip ? topTip.title : `Bienvenue, ${profile.name} !`}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-xl font-medium leading-relaxed">
+                {topTip
+                  ? topTip.message
+                  : `Tu as ${profile.trophies.toLocaleString()} trophées. Consulte tes opportunités de rush pour continuer de monter !`}
+              </p>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Trophies Card */}
-        <div className="esport-card p-4 sm:p-5 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trophées</span>
-            <div className="p-2 rounded-lg bg-yellow-500/10 text-yellow-400">
-              <Trophy className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              {profile.trophies.toLocaleString()}
-            </span>
-            <span className="text-xs text-yellow-500/80 block mt-0.5">
-              Record : {profile.highestTrophies.toLocaleString()}
-            </span>
-          </div>
-        </div>
-
-        {/* Winrate 25 Battles */}
-        <div className="esport-card p-4 sm:p-5 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Winrate Récent</span>
-            <div
-              className={`p-2 rounded-lg ${
-                battleSummary.winRate >= 60
-                  ? 'bg-emerald-500/10 text-emerald-400'
-                  : 'bg-red-500/10 text-red-400'
-              }`}
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <Button
+              variant="yellow"
+              size="md"
+              icon={<Sparkles className="w-4 h-4" />}
+              onClick={onGoToCoach}
+              className="flex-1 sm:flex-none"
             >
-              <Flame className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <span
-              className={`text-2xl sm:text-3xl font-black tracking-tight ${
-                battleSummary.winRate >= 60 ? 'text-emerald-400' : 'text-red-400'
-              }`}
+              Parler à Bitz
+            </Button>
+            <button
+              onClick={handleHeroCelebration}
+              title="Célébrer !"
+              className="brawl-btn brawl-btn-cyan min-h-[44px] min-w-[44px] px-3"
             >
-              {battleSummary.winRate}%
-            </span>
-            <span className="text-xs text-slate-400 block mt-0.5">
-              {battleSummary.victories}V - {battleSummary.defeats}D ({battleSummary.trophyDelta > 0 ? '+' : ''}
-              {battleSummary.trophyDelta} tr)
-            </span>
-          </div>
-        </div>
-
-        {/* 3v3 Victories */}
-        <div className="esport-card p-4 sm:p-5 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Victoires 3v3</span>
-            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
-              <Users className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              {profile['3vs3Victories'].toLocaleString()}
-            </span>
-            <span className="text-xs text-cyan-400/80 block mt-0.5">
-              Solo: {profile.soloVictories} | Duo: {profile.duoVictories}
-            </span>
-          </div>
-        </div>
-
-        {/* Ranked Elo / Rank */}
-        <div className="esport-card p-4 sm:p-5 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Rang Classé</span>
-            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-              <Award className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3">
-            <span className="text-xl sm:text-2xl font-black text-purple-300 uppercase tracking-tight block truncate">
-              {profile.rankedRankName || 'DIAMOND I'}
-            </span>
-            <span className="text-xs text-purple-400/80 block mt-0.5">
-              {profile.rankedElo ? `${profile.rankedElo} Elo` : 'Actif cette saison'}
-            </span>
+              <PartyPopper className="w-5 h-5 text-[#070b16]" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Progression Graph */}
-      <div className="esport-card p-4 sm:p-6 rounded-2xl">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-6">
-          <div className="flex items-center gap-2.5">
-            <TrendingUp className="w-5 h-5 text-yellow-400" />
+      {/* KPI Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Trophies KPI */}
+        <Card topHighlight={true} className="flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
+              Trophées
+            </span>
+            <div className="p-1.5 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
+              <Trophy className="w-4 h-4 fill-[#070b16]" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <TrophyCounter value={profile.trophies} size="md" showIcon={false} />
+            <span className="text-[11px] font-bold text-yellow-400/90 block mt-1">
+              Record : {profile.highestTrophies.toLocaleString()} 🏆
+            </span>
+          </div>
+        </Card>
+
+        {/* Winrate KPI */}
+        <Card topHighlight={true} className="flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
+              Winrate Récent
+            </span>
+            <div
+              className={`p-1.5 rounded-xl border-2 border-[#070b16] text-white ${
+                battleSummary.winRate >= 55 ? 'bg-[#22c55e]' : 'bg-[#ef4444]'
+              }`}
+            >
+              <Flame className="w-4 h-4 fill-white" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <span
+              className={`font-cartoon text-2xl sm:text-3xl text-stroke-sm leading-none ${
+                battleSummary.winRate >= 55 ? 'text-[#4ade80]' : 'text-[#f87171]'
+              }`}
+            >
+              {battleSummary.winRate}%
+            </span>
+            <span className="text-[11px] font-bold text-slate-300 block mt-1">
+              {battleSummary.victories}V - {battleSummary.defeats}D ({battleSummary.trophyDelta > 0 ? '+' : ''}
+              {battleSummary.trophyDelta} tr)
+            </span>
+          </div>
+        </Card>
+
+        {/* 3v3 Wins */}
+        <Card topHighlight={true} className="flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
+              Victoires 3v3
+            </span>
+            <div className="p-1.5 rounded-xl bg-[#00d9ff] border-2 border-[#070b16] text-[#070b16]">
+              <Users className="w-4 h-4 stroke-[2.5px]" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <span className="font-cartoon text-2xl sm:text-3xl text-white text-stroke-sm leading-none">
+              {profile['3vs3Victories'].toLocaleString()}
+            </span>
+            <span className="text-[11px] font-bold text-[#00d9ff] block mt-1">
+              Solo: {profile.soloVictories} | Duo: {profile.duoVictories}
+            </span>
+          </div>
+        </Card>
+
+        {/* Ranked Tier */}
+        <Card topHighlight={true} className="flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-cartoon text-slate-300 uppercase tracking-wide">
+              Ligue Classée
+            </span>
+            <div className="p-1.5 rounded-xl bg-[#a855f7] border-2 border-[#070b16] text-white">
+              <Award className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <span className="font-cartoon text-xl sm:text-2xl text-[#c084fc] text-stroke-sm leading-none truncate block">
+              {profile.rankedRankName || 'DIAMOND I'}
+            </span>
+            <span className="text-[11px] font-bold text-[#c084fc] block mt-1">
+              {profile.rankedElo ? `${profile.rankedElo} Elo` : 'En compétition'}
+            </span>
+          </div>
+        </Card>
+      </div>
+
+      {/* Progression Recharts Graph with Period Selector */}
+      <Card topHighlight={true} className="p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-[#ffc700] border-2 border-[#070b16] text-[#070b16]">
+              <TrendingUp className="w-5 h-5 stroke-[2.5px]" />
+            </div>
             <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-white">
-                Courbe d&apos;Évolution des Trophées
+              <h3 className="font-cartoon text-base sm:text-lg text-white">
+                Progression des Trophées
               </h3>
-              <p className="text-xs text-slate-400">
-                Historique des snapshots enregistrés en base de données
+              <p className="text-xs text-slate-300 font-medium">
+                Historique réel enregistré par votre helper
               </p>
             </div>
           </div>
-          <button
-            onClick={onGoToRush}
-            className="text-xs font-bold text-yellow-400 hover:text-yellow-300 flex items-center gap-1 cursor-pointer"
-          >
-            Découvrir les trophées faciles &rarr;
-          </button>
+
+          {/* Period selector */}
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0b1029] border-2 border-[#070b16]">
+            {(['24h', '7d', 'all'] as const).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-3 py-1 rounded-lg font-cartoon text-xs transition-all cursor-pointer ${
+                  period === p
+                    ? 'bg-[#ffc700] text-[#070b16] shadow-[0_2px_0_#070b16]'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                {p === '24h' ? '24h' : p === '7d' ? '7 Jours' : 'Tout'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="h-64 sm:h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="trophyGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#facc15" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#facc15" stopOpacity={0.0} />
+                <linearGradient id="cartoonTrophyGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ffc700" stopOpacity={0.45} />
+                  <stop offset="95%" stopColor="#ffc700" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} />
+              <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickLine={false} />
               <YAxis
-                stroke="#64748b"
+                stroke="#94a3b8"
                 fontSize={11}
                 tickLine={false}
-                domain={['dataMin - 100', 'dataMax + 100']}
+                domain={['dataMin - 60', 'dataMax + 60']}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
-                  borderColor: 'rgba(250, 204, 21, 0.3)',
-                  borderRadius: '12px',
-                  color: '#fff',
-                  fontSize: '12px',
+                  backgroundColor: '#12183b',
+                  borderColor: '#070b16',
+                  borderWidth: '3px',
+                  borderRadius: '16px',
+                  color: '#ffffff',
+                  fontFamily: 'var(--font-nunito)',
+                  boxShadow: '0 4px 0 #070b16',
                 }}
                 formatter={(value: unknown) => [`${Number(value).toLocaleString()} 🏆`, 'Trophées']}
               />
               <Area
                 type="monotone"
                 dataKey="trophies"
-                stroke="#facc15"
-                strokeWidth={3}
+                stroke="#ffc700"
+                strokeWidth={4}
                 fillOpacity={1}
-                fill="url(#trophyGrad)"
+                fill="url(#cartoonTrophyGrad)"
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
-      {/* Roster Summary / Quick Push */}
-      <div className="esport-card p-4 sm:p-6 rounded-2xl">
-        <h3 className="font-extrabold text-base sm:text-lg text-white mb-4">
-          Vos Brawlers les plus forts
-        </h3>
+      {/* Top Brawlers Collection Grid */}
+      <Card topHighlight={true} className="p-5 sm:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-cartoon text-lg text-white">Vos Brawlers Vedettes</h3>
+            <p className="text-xs text-slate-300">Vos plus hauts trophées actuels</p>
+          </div>
+          <Button
+            variant="cyan"
+            size="sm"
+            onClick={onGoToRush}
+            icon={<ArrowRight className="w-4 h-4" />}
+          >
+            Rush Trophées
+          </Button>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {profile.brawlers
             .slice()
@@ -242,37 +312,31 @@ export function OverviewTab({
             .map((brawler) => (
               <div
                 key={brawler.id}
-                className="relative bg-slate-900/80 border border-white/10 rounded-xl p-3 flex flex-col items-center text-center group hover:border-yellow-500/40 transition-all"
+                className="brawl-card p-3 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform"
               >
-                <div className="w-14 h-14 relative rounded-xl overflow-hidden bg-slate-800 border border-white/10 mb-2">
-                  <img
-                    src={`https://cdn.brawlify.com/brawlers/borderless/${brawler.id}.png`}
-                    alt={brawler.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://cdn.brawlify.com/brawlers/emoji/16000000.png';
-                    }}
-                  />
-                  <span className="absolute bottom-0 right-0 bg-yellow-500 text-black text-[9px] font-black px-1 rounded-tl">
-                    P{brawler.power}
-                  </span>
-                </div>
-                <span className="font-bold text-xs text-white truncate max-w-full">
+                <BrawlerAvatar
+                  id={brawler.id}
+                  name={brawler.name}
+                  power={brawler.power}
+                  hasHypercharge={Boolean(brawler.hyperCharges && brawler.hyperCharges.length > 0)}
+                  size="md"
+                  className="mb-2"
+                />
+                <span className="font-cartoon text-xs text-white truncate max-w-full">
                   {brawler.name}
                 </span>
-                <span className="text-xs font-black text-yellow-400 mt-0.5">
+                <span className="font-cartoon text-xs text-[#ffc700] mt-0.5">
                   {brawler.trophies} 🏆
                 </span>
                 {brawler.currentWinStreak && brawler.currentWinStreak > 0 ? (
-                  <span className="text-[10px] text-emerald-400 font-bold mt-1">
+                  <span className="text-[10px] text-[#4ade80] font-black mt-1 bg-[#22c55e]/15 px-1.5 py-0.2 rounded border border-[#22c55e]/30">
                     🔥 {brawler.currentWinStreak} win streak
                   </span>
                 ) : null}
               </div>
             ))}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
