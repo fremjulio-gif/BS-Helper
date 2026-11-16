@@ -17,6 +17,7 @@ import { TrophyCounter } from '../ui/TrophyCounter';
 import { ProgressBar } from '../ui/ProgressBar';
 import { TabHeader } from '../ui/TabHeader';
 import { triggerTrophyConfetti } from '../ui/Confetti';
+import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { StaggerItem } from '../motion/Stagger';
 import { useSettings } from '@/lib/settings-context';
 import { soundManager } from '@/lib/sound-manager';
@@ -480,16 +481,16 @@ export function OverviewTab({
                 <div className="brawl-card p-3 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
                   <BrawlerAvatar
                     id={brawler.id}
-                    name={brawler.name}
+                    name={getBrawlerFrenchName(brawler.name, brawler.id)}
                     power={brawler.power}
                     hasHypercharge={Boolean(brawler.hyperCharges && brawler.hyperCharges.length > 0)}
                     size="md"
                     className="mb-2"
                   />
                   <span className="font-cartoon text-xs text-white truncate max-w-full">
-                    {brawler.name}
+                    {getBrawlerFrenchName(brawler.name, brawler.id)}
                   </span>
-                  <span className="font-cartoon text-xs text-[#ffc700] mt-0.5">
+                  <span className="font-cartoon text-xs text-[#ffc700] mt-0.5 tabular-nums">
                     {brawler.trophies} 🏆
                   </span>
                   {brawler.currentWinStreak && brawler.currentWinStreak > 0 ? (

@@ -6,6 +6,7 @@ import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TabHeader } from '../ui/TabHeader';
+import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { StaggerItem } from '../motion/Stagger';
 import { Swords, Star, CheckCircle2, XCircle } from 'lucide-react';
 import { m } from 'motion/react';
@@ -173,7 +174,7 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
                     {myPlayer && (
                       <BrawlerAvatar
                         id={myPlayer.brawler.id}
-                        name={myPlayer.brawler.name}
+                        name={getBrawlerFrenchName(myPlayer.brawler.name, myPlayer.brawler.id)}
                         power={myPlayer.brawler.power}
                         size="md"
                       />
@@ -194,7 +195,7 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
                         )}
                       </div>
                       <span className="font-bold text-xs text-slate-300 mt-0.5 block">
-                        {myPlayer ? myPlayer.brawler.name : 'Brawler'}
+                        {myPlayer ? getBrawlerFrenchName(myPlayer.brawler.name, myPlayer.brawler.id) : 'Brawler'}
                         {typeof battle.rank === 'number' ? ` • Rang #${battle.rank}` : ''}
                       </span>
                     </div>

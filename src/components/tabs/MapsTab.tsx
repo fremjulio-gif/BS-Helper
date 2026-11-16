@@ -5,6 +5,7 @@ import { ActiveEvent, PlayerBrawler } from '@/types/brawlstars';
 import { Card } from '../ui/Card';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TabHeader } from '../ui/TabHeader';
+import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { Compass, Clock, Sparkles, Target } from 'lucide-react';
 
 interface MapsTabProps {
@@ -133,7 +134,7 @@ export function MapsTab({ mapRecommendations }: MapsTabProps) {
                         >
                           <BrawlerAvatar
                             id={brawler.id}
-                            name={brawler.name}
+                            name={getBrawlerFrenchName(brawler.name, brawler.id)}
                             power={brawler.power}
                             hasHypercharge={Boolean(
                               brawler.hyperCharges && brawler.hyperCharges.length > 0
@@ -142,7 +143,7 @@ export function MapsTab({ mapRecommendations }: MapsTabProps) {
                             className="mb-1.5"
                           />
                           <span className="font-cartoon text-xs text-white truncate max-w-full">
-                            {brawler.name}
+                            {getBrawlerFrenchName(brawler.name, brawler.id)}
                           </span>
                           <span className="font-cartoon text-xs text-[#ffc700] mt-0.5 tabular-nums">
                             {brawler.trophies} 🏆

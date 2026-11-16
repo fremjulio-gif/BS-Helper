@@ -17,6 +17,7 @@ import { ProgressBar } from '../ui/ProgressBar';
 import { CoachMascot, MascotMood } from '../ui/CoachMascot';
 import { GlassSurface } from '../ui/GlassSurface';
 import { TabHeader } from '../ui/TabHeader';
+import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { soundManager } from '@/lib/sound-manager';
 import { m } from 'motion/react';
 import { springSnappy } from '@/lib/motion-tokens';
@@ -486,16 +487,18 @@ ${
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <span className="font-cartoon text-sm text-white">{up.brawlerName}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-cartoon bg-[#ffc700] text-[#070b16]">
+                        <span className="font-cartoon text-sm text-white">
+                          {getBrawlerFrenchName(up.brawlerName, up.brawlerId)}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-xs font-cartoon bg-[#ffc700] text-[#070b16]">
                           {up.missingAccessory}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-300 font-medium">
+                      <p className="text-xs text-slate-300 font-medium">
                         {up.impactDescription}
                       </p>
                     </div>
-                    <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[11px]">
+                    <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-xs">
                       <span className="text-slate-400">Pouvoir {up.currentPower} &rarr; {up.targetPower}</span>
                       <span className="font-bold text-[#4ade80]">Priorité {up.priority}</span>
                     </div>

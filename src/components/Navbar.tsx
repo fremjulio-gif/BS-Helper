@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PlayerProfile } from '@/types/brawlstars';
 import { TrophyCounter } from './ui/TrophyCounter';
 import { SettingsModal } from './ui/SettingsModal';
@@ -8,6 +8,8 @@ import { Shield, RefreshCw, Zap, Tag, SlidersHorizontal } from 'lucide-react';
 import { soundManager } from '@/lib/sound-manager';
 import { m } from 'motion/react';
 import { useSettings } from '@/lib/settings-context';
+import { useToast } from './ui/Toast';
+import { triggerTrophyConfetti } from './ui/Confetti';
 import { springBouncy } from '@/lib/motion-tokens';
 import { GlassSurface } from './ui/GlassSurface';
 
@@ -37,8 +39,11 @@ export function Navbar({
   onOpenTagModal,
 }: NavbarProps) {
   const { reduceMotion } = useSettings();
+  const { showToast } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [relativeTime, setRelativeTime] = useState<string>(() => getRelativeTime(lastUpdated));
+  const tapCountRef = useRef(0);
+  const tapTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-refresh relative timestamp every 20s
   useEffect(() => {
@@ -49,9 +54,57 @@ export function Navbar({
     return () => clearInterval(interval);
   }, [lastUpdated]);
 
+  // Easter Egg 1: Konami Code sequence listener
+  useEffect(() => {
+    const konamiSequence = [
+      'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+      'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+      'b', 'a'
+    ];
+    let konamiIndex = 0;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === konamiSequence[konamiIndex]) {
+        konamiIndex++;
+        if (konamiIndex === konamiSequence.length) {
+          konamiIndex = 0;
+          soundManager.playRecord();
+          triggerTrophyConfetti();
+          showToast('🎮 CODE KONAMI ACTIVÉ : Bitz passe en mode Développeur Cosmique ! 🚀', 'info');
+        }
+      } else {
+        konamiIndex = 0;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showToast]);
+
   const handleRefreshClick = () => {
     soundManager.playTap();
     onRefresh();
+  };
+
+  // Easter Egg 2: 5 rapid taps on the lightning logo
+  const handleLogoTap = () => {
+    soundManager.playTap();
+    tapCountRef.current += 1;
+
+    if (tapCountRef.current >= 5) {
+      tapCountRef.current = 0;
+      soundManager.playRecord();
+      triggerTrophyConfetti();
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([100, 50, 100, 50, 200]);
+      }
+      showToast('⚡ HYPERCHARGE ACTIVÉE ! Coach Bitz déchaîne 100% de sa puissance ! ⚡', 'success');
+    }
+
+    if (tapTimerRef.current) clearTimeout(tapTimerRef.current);
+    tapTimerRef.current = setTimeout(() => {
+      tapCountRef.current = 0;
+    }, 1800);
   };
 
   return (
@@ -65,17 +118,28 @@ export function Navbar({
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Logo & Brand */}
             <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-              <div className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-b from-[#ffea55] to-[#ffaa00] border-2 border-[#070b16] shadow-[0_3px_0_#070b16] text-[#070b16] shrink-0">
+              <button
+                onClick={handleLogoTap}
+                title="BS Helper (Tapez 5 fois pour un secret...)"
+                className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-b from-[#ffea55] to-[#ffaa00] border-2 border-[#070b16] shadow-[0_3px_0_#070b16] text-[#070b16] shrink-0 active:scale-90 transition-transform cursor-pointer"
+              >
                 <Zap className="w-5 h-5 sm:w-6 sm:h-6 fill-[#070b16]" />
-              </div>
+              </button>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="font-cartoon text-lg sm:text-xl tracking-wider text-white text-stroke-sm">
                     BS HELPER
                   </span>
-                  <span className="px-1.5 sm:px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
+                  <button
+                    onClick={() => {
+                      soundManager.playTap();
+                      showToast('⭐ Badge PRO : Certifié Maître Brawl Stars !', 'success');
+                    }}
+                    title="Badge PRO (Cliquez-moi !)"
+                    className="px-1.5 sm:px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] cursor-pointer active:scale-95 transition-transform"
+                  >
                     PRO
-                  </span>
+                  </button>
                 </div>
                 <p className="text-[11px] font-bold text-slate-300 hidden sm:block">
                   Coach & Statistiques de Trophées

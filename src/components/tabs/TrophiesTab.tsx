@@ -7,6 +7,7 @@ import { Chip } from '../ui/Chip';
 import { ProgressBar } from '../ui/ProgressBar';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TabHeader } from '../ui/TabHeader';
+import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { Trophy, Zap, ArrowUpRight, ShieldCheck, Search } from 'lucide-react';
 
 interface TrophiesTabProps {
@@ -22,7 +23,11 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
   const boostList = easyTrophies.filter((r) => r.type === 'easy_trophies');
 
   const filteredBrawlers = brawlers
-    .filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((b) => {
+      const q = search.toLowerCase();
+      const fr = getBrawlerFrenchName(b.name, b.id).toLowerCase();
+      return b.name.toLowerCase().includes(q) || fr.includes(q);
+    })
     .sort((a, b) => {
       if (filter === 'tilt') {
         const tiltA = a.highestTrophies - a.trophies;
@@ -87,14 +92,14 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                   <div className="flex items-start gap-3.5">
                     <BrawlerAvatar
                       id={rec.brawlerId}
-                      name={rec.brawlerName}
+                      name={getBrawlerFrenchName(rec.brawlerName, rec.brawlerId)}
                       power={rec.power}
                       size="lg"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className="font-cartoon text-base text-white truncate">
-                          {rec.brawlerName}
+                          {getBrawlerFrenchName(rec.brawlerName, rec.brawlerId)}
                         </span>
                         <span className="px-2 py-0.5 rounded-md text-xs font-cartoon uppercase bg-[#22c55e] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
                           {rec.difficulty}
@@ -167,14 +172,14 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
                     <div className="flex items-start gap-3.5">
                       <BrawlerAvatar
                         id={rec.brawlerId}
-                        name={rec.brawlerName}
+                        name={getBrawlerFrenchName(rec.brawlerName, rec.brawlerId)}
                         power={rec.power}
                         size="lg"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <span className="font-cartoon text-base text-white truncate">
-                            {rec.brawlerName}
+                            {getBrawlerFrenchName(rec.brawlerName, rec.brawlerId)}
                           </span>
                           <span className="px-2 py-0.5 rounded-md text-xs font-cartoon uppercase bg-[#ef4444] text-white border-2 border-[#070b16] shadow-[0_2px_0_#070b16] tabular-nums">
                             -{diff} tr
@@ -250,14 +255,14 @@ export function TrophiesTab({ brawlers, easyTrophies }: TrophiesTabProps) {
               >
                 <BrawlerAvatar
                   id={brawler.id}
-                  name={brawler.name}
+                  name={getBrawlerFrenchName(brawler.name, brawler.id)}
                   power={brawler.power}
                   hasHypercharge={Boolean(brawler.hyperCharges && brawler.hyperCharges.length > 0)}
                   size="md"
                   className="mb-2"
                 />
                 <span className="font-cartoon text-xs text-white truncate max-w-full">
-                  {brawler.name}
+                  {getBrawlerFrenchName(brawler.name, brawler.id)}
                 </span>
                 <span className="font-cartoon text-xs text-[#ffc700] mt-0.5 tabular-nums">
                   {brawler.trophies} 🏆
