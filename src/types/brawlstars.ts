@@ -9,6 +9,62 @@ export interface Gear {
   level: number;
 }
 
+export interface SupercellBrawlerRaw {
+  id: number;
+  name: string;
+  starPowers: Accessory[];
+  gadgets: Accessory[];
+  gears: Gear[];
+  hyperCharges?: Accessory[];
+}
+
+export interface BrawlerAccessoryItem {
+  id: number;
+  name: string;
+  type: 'gadget' | 'star_power' | 'gear' | 'hypercharge';
+  isUnlocked: boolean;
+  description?: string;
+  imageUrl?: string;
+  level?: number;
+}
+
+export interface CatalogBrawler {
+  id: number;
+  scName: string;
+  name: string;
+  isUnlocked: boolean;
+  power: number;
+  rank: number;
+  trophies: number;
+  highestTrophies: number;
+  rarity: {
+    id: number;
+    name: string;
+    color: string;
+  };
+  class: {
+    id: number;
+    name: string;
+  };
+  avatarUrl: string;
+  description: string;
+  gadgets: BrawlerAccessoryItem[];
+  starPowers: BrawlerAccessoryItem[];
+  gears: BrawlerAccessoryItem[];
+  hyperCharges: BrawlerAccessoryItem[];
+  upgradePriority?: {
+    score: number;
+    levelLabel: 'Priorité Haute' | 'Priorité Moyenne' | 'Prêt au Combat' | 'Non débloqué';
+    reason: string;
+  };
+}
+
+export interface CatalogResponse {
+  brawlers: CatalogBrawler[];
+  total: number;
+  unlockedCount: number;
+}
+
 export interface PlayerBrawler {
   id: number;
   name: string;
@@ -46,6 +102,10 @@ export interface PlayerProfile {
   rankedElo?: number;
   highestAllTimeRankedRankName?: string;
   highestAllTimeRankedElo?: number;
+  club?: {
+    tag: string;
+    name: string;
+  };
   brawlers: PlayerBrawler[];
 }
 
@@ -196,4 +256,20 @@ export interface MilestoneRoad {
   estimatedMatches: number;
   rankTitle: string;
   advice: string;
+}
+
+export interface SupercellGameMode {
+  id: number;
+  name: string;
+}
+
+export interface GameModeMeta {
+  id: number;
+  name: string;
+  scHash: string;
+  imageUrl?: string | null;
+  color?: string | null;
+  bgColor?: string | null;
+  description?: string | null;
+  title?: string | null;
 }

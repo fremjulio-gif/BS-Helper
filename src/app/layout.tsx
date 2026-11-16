@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Lilita_One, Nunito } from 'next/font/google';
 import './globals.css';
+import { AppProviders } from '@/components/AppProviders';
 
 const lilitaOne = Lilita_One({
   weight: '400',
@@ -36,8 +37,6 @@ export const viewport: Viewport = {
   themeColor: '#1a1552',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
 };
 
@@ -53,7 +52,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="antialiased min-h-screen text-slate-100 font-sans selection:bg-[#ffc700] selection:text-[#070b16]">
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "cdn.brawlify.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn-misc.brawlify.com",
+        pathname: "/**",
+      },
     ],
   },
 };

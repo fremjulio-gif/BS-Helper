@@ -4,6 +4,8 @@ import {
   fetchPlayerBattleLog,
   fetchEventsRotation,
 } from '@/lib/brawlstars-api';
+import { getGameModesDictionary } from '@/lib/gamemodes-service';
+import { getCatalogBrawlers } from '@/lib/brawlers-service';
 import {
   getEasyTrophyOpportunities,
   getMapRecommendations,
@@ -18,6 +20,7 @@ import {
   recordPlayerSnapshot,
   syncBattleLog,
   getPlayerProgression,
+  getHistoricalBattleStats,
 } from '@/lib/stats-recorder';
 
 export async function GET(req: NextRequest) {
@@ -26,10 +29,11 @@ export async function GET(req: NextRequest) {
     const tag = searchParams.get('tag') || process.env.DEFAULT_PLAYER_TAG || '#8L80JGJGG';
 
     // 1. Fetch live data concurrently
-    const [profile, battleLog, events] = await Promise.all([
+    const [profile, battleLog, events, gameModes] = await Promise.all([
       fetchPlayerProfile(tag),
       fetchPlayerBattleLog(tag),
       fetchEventsRotation(),
+      getGameModesDictionary(),
     ]);
 
     // 2. Persist snapshot and battles in DB (non-blocking)
@@ -44,12 +48,23 @@ export async function GET(req: NextRequest) {
     const easyTrophies = getEasyTrophyOpportunities(profile.brawlers);
     const mapRecommendations = getMapRecommendations(events, profile.brawlers);
     const battleSummary = analyzeBattleLog(battleLog.items, profile.tag);
-    const progression = await getPlayerProgression(profile.tag);
+    const [progression, historicalStats] = await Promise.all([
+      getPlayerProgression(profile.tag),
+      getHistoricalBattleStats(profile.tag),
+    ]);
 
-    const sessionObjectives = generateSessionObjectives(profile, battleSummary);
-    const lossReport = analyzeLossPatterns(battleLog.items, profile.tag);
-    const upgradePriorities = detectUpgradePriorities(profile);
-    const milestoneRoad = calculateMilestoneRoad(profile, progression);
+    const [catalog, sessionObjectives, lossReport, upgradePriorities, milestoneRoad] =
+      await Promise.all([
+        getCatalogBrawlers(profile.brawlers || []).catch(() => ({
+          brawlers: [],
+          total: 0,
+          unlockedCount: 0,
+        })),
+        Promise.resolve(generateSessionObjectives(profile, battleSummary)),
+        Promise.resolve(analyzeLossPatterns(battleLog.items, profile.tag)),
+        Promise.resolve(detectUpgradePriorities(profile)),
+        Promise.resolve(calculateMilestoneRoad(profile, progression)),
+      ]);
 
     const tips = generateComprehensiveTacticalTips(
       profile,
@@ -72,6 +87,9 @@ export async function GET(req: NextRequest) {
       milestoneRoad,
       progression,
       recentBattles: battleLog.items.slice(0, 15),
+      gameModes,
+      catalog,
+      historicalStats,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';

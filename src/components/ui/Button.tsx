@@ -1,12 +1,15 @@
 'use client';
 
 import React from 'react';
+import { Pressable } from '@/components/motion/Pressable';
+import { useSettings } from '@/lib/settings-context';
 import { soundManager } from '@/lib/sound-manager';
 
 export type ButtonVariant = 'yellow' | 'cyan' | 'green' | 'red' | 'dark';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onAnimationStart' | 'onDrag' | 'onDragStart' | 'onDragEnd'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: React.ReactNode;
@@ -23,6 +26,8 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const { sound } = useSettings();
+
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-xs min-h-[40px]',
     md: 'px-4 py-2.5 text-sm min-h-[44px]',
@@ -39,13 +44,15 @@ export function Button({
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!disabled) {
-      soundManager.playTap();
+      if (sound) {
+        soundManager.playTap();
+      }
       if (onClick) onClick(e);
     }
   };
 
   return (
-    <button
+    <Pressable
       onClick={handleClick}
       disabled={disabled}
       className={`brawl-btn ${variantClass} ${sizeClasses} ${className}`}
@@ -53,6 +60,6 @@ export function Button({
     >
       {icon && <span className="shrink-0">{icon}</span>}
       <span className="font-cartoon tracking-wide">{children}</span>
-    </button>
+    </Pressable>
   );
 }

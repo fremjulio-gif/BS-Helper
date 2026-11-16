@@ -12,6 +12,7 @@ import {
   MilestoneRoad,
 } from '@/types/brawlstars';
 import { MODE_TACTICAL_RULES, DID_YOU_KNOW_TRIVIA } from './tips-content';
+import { getBrawlerFrenchName } from './brawler-names';
 
 // Brawler recommendations by mode archetypes
 const MODE_RECOMMENDATIONS: Record<string, string[]> = {
@@ -37,14 +38,15 @@ export function getEasyTrophyOpportunities(brawlers: PlayerBrawler[]): StrategyR
   const recommendations: StrategyRecommendation[] = [];
 
   for (const brawler of brawlers) {
+    const frName = getBrawlerFrenchName(brawler.name, brawler.id);
     const trophyDeficit = brawler.highestTrophies - brawler.trophies;
 
     // 1. Tilt Recovery (lost 25+ trophies from personal best)
     if (trophyDeficit >= 25 && brawler.highestTrophies >= 400) {
       recommendations.push({
         type: 'tilt_recovery',
-        title: `Récupération de Tilt : ${brawler.name}`,
-        brawlerName: brawler.name,
+        title: `Récupération de Tilt : ${frName}`,
+        brawlerName: frName,
         brawlerId: brawler.id,
         power: brawler.power,
         currentTrophies: brawler.trophies,
@@ -58,8 +60,8 @@ export function getEasyTrophyOpportunities(brawlers: PlayerBrawler[]): StrategyR
     if (brawler.power >= 7 && brawler.trophies < 300) {
       recommendations.push({
         type: 'easy_trophies',
-        title: `Boost Express : ${brawler.name}`,
-        brawlerName: brawler.name,
+        title: `Boost Express : ${frName}`,
+        brawlerName: frName,
         brawlerId: brawler.id,
         power: brawler.power,
         currentTrophies: brawler.trophies,
@@ -70,8 +72,8 @@ export function getEasyTrophyOpportunities(brawlers: PlayerBrawler[]): StrategyR
     } else if (brawler.trophies < 100) {
       recommendations.push({
         type: 'easy_trophies',
-        title: `Trophées d'Or : ${brawler.name}`,
-        brawlerName: brawler.name,
+        title: `Trophées d'Or : ${frName}`,
+        brawlerName: frName,
         brawlerId: brawler.id,
         power: brawler.power,
         currentTrophies: brawler.trophies,
@@ -256,16 +258,17 @@ export function generateSessionObjectives(
   if (lowBrawler) {
     const target = lowBrawler.trophies < 100 ? 200 : 300;
     const diff = target - lowBrawler.trophies;
+    const lowFrName = getBrawlerFrenchName(lowBrawler.name, lowBrawler.id);
     objectives.push({
       id: 'obj_rush_low',
-      title: `Rush Express avec ${lowBrawler.name}`,
+      title: `Rush Express avec ${lowFrName}`,
       targetDescription: `Atteindre ${target} trophées (actuellement ${lowBrawler.trophies})`,
       current: lowBrawler.trophies,
       target,
       unit: 'trophées',
       completed: lowBrawler.trophies >= target,
       brawlerId: lowBrawler.id,
-      brawlerName: lowBrawler.name,
+      brawlerName: lowFrName,
       potentialGain: diff,
     });
   }
@@ -277,16 +280,17 @@ export function generateSessionObjectives(
 
   if (tilted) {
     const deficit = tilted.highestTrophies - tilted.trophies;
+    const tiltedFrName = getBrawlerFrenchName(tilted.name, tilted.id);
     objectives.push({
       id: 'obj_tilt_recovery',
-      title: `Récupérer le tilt sur ${tilted.name}`,
+      title: `Récupérer le tilt sur ${tiltedFrName}`,
       targetDescription: `Remonter à son record personnel de ${tilted.highestTrophies} trophées`,
       current: tilted.trophies,
       target: tilted.highestTrophies,
       unit: 'trophées',
       completed: tilted.trophies >= tilted.highestTrophies,
       brawlerId: tilted.id,
-      brawlerName: tilted.name,
+      brawlerName: tiltedFrName,
       potentialGain: deficit,
     });
   }
@@ -413,16 +417,18 @@ export function detectUpgradePriorities(profile: PlayerProfile): UpgradePriority
   const priorities: UpgradePriorityItem[] = [];
 
   for (const b of profile.brawlers) {
+    const frName = getBrawlerFrenchName(b.name, b.id);
+
     // Priority A: Power 8 but high trophies (missing crucial Star Power at Power 9)
     if (b.power === 8 && b.trophies >= 400 && b.starPowers.length === 0) {
       priorities.push({
         brawlerId: b.id,
-        brawlerName: b.name,
+        brawlerName: frName,
         currentPower: b.power,
         targetPower: 9,
         trophies: b.trophies,
         missingAccessory: 'Star Power',
-        impactDescription: `Vous jouez ${b.name} à ${b.trophies} trophées sans Pouvoir Star. Le passage au niveau 9 débloquera son pouvoir passif décisif.`,
+        impactDescription: `Vous jouez ${frName} à ${b.trophies} trophées sans Pouvoir Star. Le passage au niveau 9 débloquera son pouvoir passif décisif.`,
         priority: 'Haute',
       });
     }
@@ -431,7 +437,7 @@ export function detectUpgradePriorities(profile: PlayerProfile): UpgradePriority
     if (b.power === 10 && b.trophies >= 600 && (!b.hyperCharges || b.hyperCharges.length === 0)) {
       priorities.push({
         brawlerId: b.id,
-        brawlerName: b.name,
+        brawlerName: frName,
         currentPower: b.power,
         targetPower: 11,
         trophies: b.trophies,
@@ -445,12 +451,12 @@ export function detectUpgradePriorities(profile: PlayerProfile): UpgradePriority
     if (b.power >= 7 && b.gadgets.length === 0 && b.trophies >= 300) {
       priorities.push({
         brawlerId: b.id,
-        brawlerName: b.name,
+        brawlerName: frName,
         currentPower: b.power,
         targetPower: b.power,
         trophies: b.trophies,
         missingAccessory: 'Niveau 9',
-        impactDescription: `${b.name} est niveau ${b.power} sans gadget actif. Débloquer un gadget offre 3 jokers tactiques par combat.`,
+        impactDescription: `${frName} est niveau ${b.power} sans gadget actif. Débloquer un gadget offre 3 jokers tactiques par combat.`,
         priority: 'Haute',
       });
     }

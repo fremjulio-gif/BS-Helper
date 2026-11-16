@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import { m } from 'motion/react';
+import { useSettings } from '@/lib/settings-context';
+import { springBouncy, reducedTransition } from '@/lib/motion-tokens';
 
 interface ProgressBarProps {
   value: number; // 0 to 100
@@ -21,6 +24,7 @@ export function ProgressBar({
   animated = true,
   className = '',
 }: ProgressBarProps) {
+  const { reduceMotion } = useSettings();
   const clampedValue = Math.min(100, Math.max(0, value));
 
   const heightClasses = {
@@ -49,15 +53,21 @@ export function ProgressBar({
       <div
         className={`w-full ${heightClasses} bg-[#0b0f24] rounded-full border-2 border-[#070b16] shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] overflow-hidden p-0.5 relative`}
       >
-        <div
-          style={{ width: `${clampedValue}%` }}
-          className={`h-full rounded-full transition-all duration-500 ease-out relative ${colorClasses} ${
-            animated ? 'brawl-progress-striped' : ''
+        <m.div
+          initial={reduceMotion ? { width: `${clampedValue}%` } : { width: 0 }}
+          animate={{ width: `${clampedValue}%` }}
+          transition={
+            reduceMotion
+              ? reducedTransition
+              : { ...springBouncy, duration: 0.8 }
+          }
+          className={`h-full rounded-full relative ${colorClasses} ${
+            animated && !reduceMotion ? 'brawl-progress-striped' : ''
           }`}
         >
           {/* Top highlight bar */}
           <div className="absolute top-0 left-0 right-0 h-1/3 bg-white/30 rounded-t-full pointer-events-none" />
-        </div>
+        </m.div>
       </div>
     </div>
   );

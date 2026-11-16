@@ -5,13 +5,17 @@ import { Navbar } from '@/components/Navbar';
 import { DesktopNav } from '@/components/DesktopNav';
 import { BottomNav, TabType } from '@/components/BottomNav';
 import { OverviewTab } from '@/components/tabs/OverviewTab';
-import { TrophiesTab } from '@/components/tabs/TrophiesTab';
+import { BrawlersTab } from '@/components/tabs/BrawlersTab';
 import { MapsTab } from '@/components/tabs/MapsTab';
 import { BattleLogTab } from '@/components/tabs/BattleLogTab';
 import { CoachTab } from '@/components/tabs/CoachTab';
-import { CoachMascot } from '@/components/ui/CoachMascot';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TagModal } from '@/components/ui/TagModal';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
+import { SplashScreen } from '@/components/ui/SplashScreen';
+import { PageTransition } from '@/components/motion/PageTransition';
+import { getTabDirection } from '@/lib/motion-tokens';
+import { HistoricalStatsResponse } from '@/lib/stats-recorder';
 import {
   PlayerProfile,
   StrategyRecommendation,
@@ -24,10 +28,13 @@ import {
   LossPatternReport,
   UpgradePriorityItem,
   MilestoneRoad,
+  GameModeMeta,
+  CatalogResponse,
 } from '@/types/brawlstars';
 
 export default function HomePage() {
   const [currentTab, setCurrentTab] = useState<TabType>('overview');
+  const [tabDirection, setTabDirection] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -51,6 +58,9 @@ export default function HomePage() {
     Array<{ date: string; trophies: number; rankedElo?: number | null; fullDate?: string }>
   >([]);
   const [recentBattles, setRecentBattles] = useState<BattleItem[]>([]);
+  const [gameModes, setGameModes] = useState<Record<string, GameModeMeta>>({});
+  const [catalog, setCatalog] = useState<CatalogResponse | undefined>(undefined);
+  const [historicalStats, setHistoricalStats] = useState<HistoricalStatsResponse | null>(null);
 
   const loadData = useCallback(async (tagOverride?: string) => {
     setLoading(true);
@@ -76,6 +86,9 @@ export default function HomePage() {
       setMilestoneRoad(data.milestoneRoad || null);
       setProgression(data.progression || []);
       setRecentBattles(data.recentBattles || []);
+      setGameModes(data.gameModes || {});
+      if (data.catalog) setCatalog(data.catalog);
+      if (data.historicalStats) setHistoricalStats(data.historicalStats);
       setLastUpdated(new Date());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Une erreur inattendue est survenue.';
@@ -102,8 +115,17 @@ export default function HomePage() {
     loadData(newTag);
   };
 
+  const handleTabChange = (newTab: TabType) => {
+    if (newTab !== currentTab) {
+      setTabDirection(getTabDirection(currentTab, newTab));
+      setCurrentTab(newTab);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <SplashScreen />
+
       <Navbar
         profile={profile}
         loading={loading}
@@ -112,10 +134,10 @@ export default function HomePage() {
         onOpenTagModal={() => setIsTagModalOpen(true)}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 pb-28 sm:pb-32 md:pb-12">
         <DesktopNav
           currentTab={currentTab}
-          onChangeTab={setCurrentTab}
+          onChangeTab={handleTabChange}
           easyCount={easyTrophies.length}
         />
 
@@ -131,19 +153,9 @@ export default function HomePage() {
         )}
 
         {loading && !profile ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <CoachMascot mood="pumped" size={96} className="animate-bounce" />
-            <div className="text-center">
-              <h3 className="font-cartoon text-xl text-white text-stroke-sm">
-                Synchronisation de Brawl Stars...
-              </h3>
-              <p className="text-xs text-slate-300 font-bold mt-1">
-                Coach Bitz analyse vos 25 derniers combats et vos maps
-              </p>
-            </div>
-          </div>
+          <DashboardSkeleton />
         ) : profile && battleSummary ? (
-          <div>
+          <PageTransition currentTab={currentTab} direction={tabDirection}>
             {currentTab === 'overview' && (
               <OverviewTab
                 profile={profile}
@@ -153,22 +165,33 @@ export default function HomePage() {
                 sessionObjectives={sessionObjectives}
                 milestoneRoad={milestoneRoad}
                 lossReport={lossReport}
-                onGoToCoach={() => setCurrentTab('coach')}
-                onGoToRush={() => setCurrentTab('trophies')}
+                onGoToCoach={() => handleTabChange('coach')}
+                onGoToRush={() => handleTabChange('trophies')}
               />
             )}
 
             {currentTab === 'trophies' && (
-              <TrophiesTab brawlers={profile.brawlers} easyTrophies={easyTrophies} />
+              <BrawlersTab
+                brawlers={profile.brawlers}
+                easyTrophies={easyTrophies}
+                catalog={catalog}
+              />
             )}
 
-            {currentTab === 'maps' && <MapsTab mapRecommendations={mapRecommendations} />}
+            {currentTab === 'maps' && (
+              <MapsTab
+                mapRecommendations={mapRecommendations}
+                gameModes={gameModes}
+              />
+            )}
 
             {currentTab === 'battles' && (
               <BattleLogTab
                 summary={battleSummary}
                 recentBattles={recentBattles}
                 myTag={profile.tag}
+                gameModes={gameModes}
+                historicalStats={historicalStats}
               />
             )}
 
@@ -183,14 +206,14 @@ export default function HomePage() {
                 milestoneRoad={milestoneRoad}
               />
             )}
-          </div>
+          </PageTransition>
         ) : null}
       </main>
 
       {/* Mobile Bottom Navigation */}
       <BottomNav
         currentTab={currentTab}
-        onChangeTab={setCurrentTab}
+        onChangeTab={handleTabChange}
         easyCount={easyTrophies.length}
       />
 
@@ -204,7 +227,7 @@ export default function HomePage() {
 
       {/* Disclaimer Footer (Supercell Fan Content Policy) */}
       <footer className="w-full border-t-2 border-[#070b16]/60 bg-[#0d122c]/90 py-5 text-center px-4 text-xs text-slate-400 font-medium">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-[11px] leading-relaxed">
             Ce contenu n&apos;est pas affilié, soutenu, sponsorisé ou spécifiquement approuvé par Supercell
             et Supercell n&apos;en est pas responsable. Pour plus d&apos;informations, consultez le Règlement sur les Contenus de Fans de Supercell.
