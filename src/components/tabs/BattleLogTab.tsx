@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BattleLogSummary, BattleItem, BattlePlayer } from '@/types/brawlstars';
+import { BattleLogSummary, BattleItem, BattlePlayer, GameModeMeta } from '@/types/brawlstars';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TabHeader } from '../ui/TabHeader';
+import { GameModeBadge } from '../ui/GameModeBadge';
 import { getBrawlerFrenchName } from '@/lib/brawler-names';
+import { resolveGameMode } from '@/lib/gamemodes-service';
 import { StaggerItem } from '../motion/Stagger';
 import { Swords, Star, CheckCircle2, XCircle } from 'lucide-react';
 import { m } from 'motion/react';
@@ -16,9 +18,10 @@ interface BattleLogTabProps {
   summary: BattleLogSummary;
   recentBattles: BattleItem[];
   myTag: string;
+  gameModes?: Record<string, GameModeMeta>;
 }
 
-export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProps) {
+export function BattleLogTab({ summary, recentBattles, myTag, gameModes }: BattleLogTabProps) {
   const { reduceMotion } = useSettings();
   const [selectedMode, setSelectedMode] = useState<string>('all');
   const normalizedTag = myTag.trim().toUpperCase().replace('#', '');
@@ -117,16 +120,19 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
           onClick={() => setSelectedMode('all')}
           tone="cyan"
         />
-        {availableModes.map((mode) => (
-          <Chip
-            key={mode}
-            label={mode.replace(/([A-Z])/g, ' $1')}
-            count={recentBattles.filter((b) => (b.event.mode || b.battle.mode) === mode).length}
-            active={selectedMode === mode}
-            onClick={() => setSelectedMode(mode)}
-            tone="yellow"
-          />
-        ))}
+        {availableModes.map((mode) => {
+          const modeMeta = resolveGameMode(mode, gameModes);
+          return (
+            <Chip
+              key={mode}
+              label={modeMeta.name}
+              count={recentBattles.filter((b) => (b.event.mode || b.battle.mode) === mode).length}
+              active={selectedMode === mode}
+              onClick={() => setSelectedMode(mode)}
+              tone="yellow"
+            />
+          );
+        })}
       </div>
 
       {/* Battles Timeline */}
@@ -181,10 +187,12 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
                     )}
 
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-cartoon text-sm text-white capitalize">
-                          {item.event.mode || battle.mode}
-                        </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <GameModeBadge
+                          mode={item.event.mode || battle.mode}
+                          dictionary={gameModes}
+                          size="sm"
+                        />
                         {item.event.map && (
                           <span className="text-xs text-slate-300 font-medium">({item.event.map})</span>
                         )}

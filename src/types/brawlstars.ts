@@ -197,3 +197,19 @@ export interface MilestoneRoad {
   rankTitle: string;
   advice: string;
 }
+
+export interface SupercellGameMode {
+  id: number;
+  name: string;
+}
+
+export interface GameModeMeta {
+  id: number;
+  name: string;
+  scHash: string;
+  imageUrl?: string | null;
+  color?: string | null;
+  bgColor?: string | null;
+  description?: string | null;
+  title?: string | null;
+}

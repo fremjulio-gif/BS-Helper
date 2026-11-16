@@ -27,6 +27,7 @@ import {
   LossPatternReport,
   UpgradePriorityItem,
   MilestoneRoad,
+  GameModeMeta,
 } from '@/types/brawlstars';
 
 export default function HomePage() {
@@ -55,6 +56,7 @@ export default function HomePage() {
     Array<{ date: string; trophies: number; rankedElo?: number | null; fullDate?: string }>
   >([]);
   const [recentBattles, setRecentBattles] = useState<BattleItem[]>([]);
+  const [gameModes, setGameModes] = useState<Record<string, GameModeMeta>>({});
 
   const loadData = useCallback(async (tagOverride?: string) => {
     setLoading(true);
@@ -80,6 +82,7 @@ export default function HomePage() {
       setMilestoneRoad(data.milestoneRoad || null);
       setProgression(data.progression || []);
       setRecentBattles(data.recentBattles || []);
+      setGameModes(data.gameModes || {});
       setLastUpdated(new Date());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Une erreur inattendue est survenue.';
@@ -165,13 +168,19 @@ export default function HomePage() {
               <TrophiesTab brawlers={profile.brawlers} easyTrophies={easyTrophies} />
             )}
 
-            {currentTab === 'maps' && <MapsTab mapRecommendations={mapRecommendations} />}
+            {currentTab === 'maps' && (
+              <MapsTab
+                mapRecommendations={mapRecommendations}
+                gameModes={gameModes}
+              />
+            )}
 
             {currentTab === 'battles' && (
               <BattleLogTab
                 summary={battleSummary}
                 recentBattles={recentBattles}
                 myTag={profile.tag}
+                gameModes={gameModes}
               />
             )}
 

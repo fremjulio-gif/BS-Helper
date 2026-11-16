@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { ActiveEvent, PlayerBrawler } from '@/types/brawlstars';
+import { ActiveEvent, PlayerBrawler, GameModeMeta } from '@/types/brawlstars';
 import { Card } from '../ui/Card';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TabHeader } from '../ui/TabHeader';
+import { GameModeBadge } from '../ui/GameModeBadge';
 import { getBrawlerFrenchName } from '@/lib/brawler-names';
 import { Compass, Clock, Sparkles, Target } from 'lucide-react';
 
@@ -13,24 +14,8 @@ interface MapsTabProps {
     event: ActiveEvent;
     recommendedBrawlers: PlayerBrawler[];
   }>;
+  gameModes?: Record<string, GameModeMeta>;
 }
-
-const MODE_NAMES_FR: Record<string, string> = {
-  brawlBall: 'Brawl Ball',
-  soloShowdown: 'Survivant Solo',
-  duoShowdown: 'Survivant Duo',
-  gemGrab: 'Razzia de Gemmes',
-  heist: 'Braquage',
-  knockout: 'Hors-Jeu (Knockout)',
-  bounty: 'Prime',
-  hotZone: 'Zone Réservée',
-  megaShowdown: 'Méga Survivant',
-  megaDuoShowdown: 'Méga Duo',
-  wipeout: 'Chasse Ouverte',
-  brawlArena: 'Arène Brawl',
-  airHockey: 'Air Hockey',
-  tagTeam: 'Tag Team',
-};
 
 const MODE_TACTICS: Record<string, { advice: string; why: string }> = {
   heist: {
@@ -63,7 +48,7 @@ const MODE_TACTICS: Record<string, { advice: string; why: string }> = {
   },
 };
 
-export function MapsTab({ mapRecommendations }: MapsTabProps) {
+export function MapsTab({ mapRecommendations, gameModes }: MapsTabProps) {
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Unified Tab Header */}
@@ -76,7 +61,6 @@ export function MapsTab({ mapRecommendations }: MapsTabProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {mapRecommendations.map(({ event, recommendedBrawlers }) => {
-          const modeName = MODE_NAMES_FR[event.event.mode] || event.event.mode;
           const tactic = MODE_TACTICS[event.event.mode] || {
             advice: 'Privilégiez la synergie d\'équipe et le contrôle du terrain.',
             why: 'Brawlers équilibrés avec pouvoir élevé.',
@@ -93,12 +77,14 @@ export function MapsTab({ mapRecommendations }: MapsTabProps) {
               className="flex flex-col justify-between border-3 border-[#070b16]"
             >
               <div>
-                {/* Header */}
+                {/* Header with dynamic game mode badge */}
                 <div className="flex items-center justify-between pb-3 border-b-2 border-[#070b16]/60">
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-lg text-xs font-cartoon uppercase bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16]">
-                      {modeName}
-                    </span>
+                    <GameModeBadge
+                      mode={event.event.mode}
+                      dictionary={gameModes}
+                      size="md"
+                    />
                     <h3 className="font-cartoon text-base sm:text-lg text-white mt-2">
                       {event.event.map}
                     </h3>

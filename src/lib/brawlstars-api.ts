@@ -1,4 +1,4 @@
-import { PlayerProfile, BattleLogResponse, ActiveEvent } from '@/types/brawlstars';
+import { PlayerProfile, BattleLogResponse, ActiveEvent, SupercellGameMode } from '@/types/brawlstars';
 
 const DIRECT_API_URL = 'https://api.brawlstars.com/v1';
 const PROXY_API_URL = 'https://bsproxy.royaleapi.dev/v1';
@@ -94,4 +94,8 @@ export async function fetchPlayerBattleLog(tag?: string): Promise<BattleLogRespo
 
 export async function fetchEventsRotation(): Promise<ActiveEvent[]> {
   return fetchFromBrawlApi<ActiveEvent[]>('/events/rotation', 300);
+}
+
+export async function fetchGameModes(): Promise<{ items: SupercellGameMode[] }> {
+  return fetchFromBrawlApi<{ items: SupercellGameMode[] }>('/gamemodes', 60);
 }
