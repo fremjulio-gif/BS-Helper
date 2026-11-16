@@ -21,7 +21,7 @@ export function BottomNav({ currentTab, onChangeTab, easyCount = 0 }: BottomNavP
 
   const tabs = [
     { id: 'overview', label: 'Stats', icon: BarChart3 },
-    { id: 'trophies', label: 'Rush', icon: Trophy, badge: easyCount > 0 ? easyCount : undefined },
+    { id: 'trophies', label: 'Brawlers', icon: Trophy, badge: easyCount > 0 ? easyCount : undefined },
     { id: 'maps', label: 'Maps', icon: Compass },
     { id: 'battles', label: 'Matchs', icon: Swords },
     { id: 'coach', label: 'Coach', icon: BotMessageSquare, highlight: true },

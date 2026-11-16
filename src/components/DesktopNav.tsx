@@ -22,7 +22,7 @@ export function DesktopNav({ currentTab, onChangeTab, easyCount = 0 }: DesktopNa
     { id: 'overview', label: "Vue d'ensemble", icon: BarChart3 },
     {
       id: 'trophies',
-      label: 'Rush Trophées',
+      label: 'Brawlers',
       icon: Trophy,
       badge: easyCount > 0 ? `${easyCount} dispo` : undefined,
     },

@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { DesktopNav } from '@/components/DesktopNav';
 import { BottomNav, TabType } from '@/components/BottomNav';
 import { OverviewTab } from '@/components/tabs/OverviewTab';
-import { TrophiesTab } from '@/components/tabs/TrophiesTab';
+import { BrawlersTab } from '@/components/tabs/BrawlersTab';
 import { MapsTab } from '@/components/tabs/MapsTab';
 import { BattleLogTab } from '@/components/tabs/BattleLogTab';
 import { CoachTab } from '@/components/tabs/CoachTab';
@@ -28,6 +28,7 @@ import {
   UpgradePriorityItem,
   MilestoneRoad,
   GameModeMeta,
+  CatalogResponse,
 } from '@/types/brawlstars';
 
 export default function HomePage() {
@@ -57,6 +58,7 @@ export default function HomePage() {
   >([]);
   const [recentBattles, setRecentBattles] = useState<BattleItem[]>([]);
   const [gameModes, setGameModes] = useState<Record<string, GameModeMeta>>({});
+  const [catalog, setCatalog] = useState<CatalogResponse | undefined>(undefined);
 
   const loadData = useCallback(async (tagOverride?: string) => {
     setLoading(true);
@@ -83,6 +85,7 @@ export default function HomePage() {
       setProgression(data.progression || []);
       setRecentBattles(data.recentBattles || []);
       setGameModes(data.gameModes || {});
+      if (data.catalog) setCatalog(data.catalog);
       setLastUpdated(new Date());
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Une erreur inattendue est survenue.';
@@ -165,7 +168,11 @@ export default function HomePage() {
             )}
 
             {currentTab === 'trophies' && (
-              <TrophiesTab brawlers={profile.brawlers} easyTrophies={easyTrophies} />
+              <BrawlersTab
+                brawlers={profile.brawlers}
+                easyTrophies={easyTrophies}
+                catalog={catalog}
+              />
             )}
 
             {currentTab === 'maps' && (

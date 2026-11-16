@@ -5,6 +5,7 @@ import {
   fetchEventsRotation,
 } from '@/lib/brawlstars-api';
 import { getGameModesDictionary } from '@/lib/gamemodes-service';
+import { getCatalogBrawlers } from '@/lib/brawlers-service';
 import {
   getEasyTrophyOpportunities,
   getMapRecommendations,
@@ -48,10 +49,18 @@ export async function GET(req: NextRequest) {
     const battleSummary = analyzeBattleLog(battleLog.items, profile.tag);
     const progression = await getPlayerProgression(profile.tag);
 
-    const sessionObjectives = generateSessionObjectives(profile, battleSummary);
-    const lossReport = analyzeLossPatterns(battleLog.items, profile.tag);
-    const upgradePriorities = detectUpgradePriorities(profile);
-    const milestoneRoad = calculateMilestoneRoad(profile, progression);
+    const [catalog, sessionObjectives, lossReport, upgradePriorities, milestoneRoad] =
+      await Promise.all([
+        getCatalogBrawlers(profile.brawlers || []).catch(() => ({
+          brawlers: [],
+          total: 0,
+          unlockedCount: 0,
+        })),
+        Promise.resolve(generateSessionObjectives(profile, battleSummary)),
+        Promise.resolve(analyzeLossPatterns(battleLog.items, profile.tag)),
+        Promise.resolve(detectUpgradePriorities(profile)),
+        Promise.resolve(calculateMilestoneRoad(profile, progression)),
+      ]);
 
     const tips = generateComprehensiveTacticalTips(
       profile,
@@ -75,6 +84,7 @@ export async function GET(req: NextRequest) {
       progression,
       recentBattles: battleLog.items.slice(0, 15),
       gameModes,
+      catalog,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';
