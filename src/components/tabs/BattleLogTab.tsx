@@ -5,7 +5,10 @@ import { BattleLogSummary, BattleItem, BattlePlayer } from '@/types/brawlstars';
 import { Card } from '../ui/Card';
 import { Chip } from '../ui/Chip';
 import { BrawlerAvatar } from '../ui/BrawlerAvatar';
+import { StaggerItem } from '../motion/Stagger';
 import { Swords, Star, CheckCircle2, XCircle } from 'lucide-react';
+import { m } from 'motion/react';
+import { useSettings } from '@/lib/settings-context';
 
 interface BattleLogTabProps {
   summary: BattleLogSummary;
@@ -14,6 +17,7 @@ interface BattleLogTabProps {
 }
 
 export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProps) {
+  const { reduceMotion } = useSettings();
   const [selectedMode, setSelectedMode] = useState<string>('all');
   const normalizedTag = myTag.trim().toUpperCase().replace('#', '');
 
@@ -155,81 +159,86 @@ export function BattleLogTab({ summary, recentBattles, myTag }: BattleLogTabProp
               battle.starPlayer && battle.starPlayer.tag.replace('#', '') === normalizedTag;
 
             return (
-              <div
-                key={index}
-                className={`p-3.5 sm:p-4 rounded-2xl border-3 border-[#070b16] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_0_#070b16] transition-transform hover:-translate-y-0.5 ${
-                  isWin
-                    ? 'bg-gradient-to-r from-[#173a2a] to-[#122822]'
-                    : 'bg-gradient-to-r from-[#381a24] to-[#25131b]'
-                }`}
-              >
-                {/* Left: Avatar + Details */}
-                <div className="flex items-center gap-3">
-                  {myPlayer && (
-                    <BrawlerAvatar
-                      id={myPlayer.brawler.id}
-                      name={myPlayer.brawler.name}
-                      power={myPlayer.brawler.power}
-                      size="md"
-                    />
-                  )}
+              <StaggerItem key={item.battleTime || index} index={index}>
+                <div
+                  className={`p-3.5 sm:p-4 rounded-2xl border-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-[0_4px_0_#070b16] transition-transform hover:-translate-y-0.5 ${
+                    isStarPlayer
+                      ? 'border-[#ffc700] ring-2 ring-[#ffc700]/30 shadow-[0_4px_12px_rgba(255,199,0,0.2)]'
+                      : 'border-[#070b16]'
+                  } ${
+                    isWin
+                      ? 'bg-gradient-to-r from-[#173a2a] to-[#122822]'
+                      : 'bg-gradient-to-r from-[#381a24] to-[#25131b]'
+                  }`}
+                >
+                  {/* Left: Avatar + Details */}
+                  <div className="flex items-center gap-3">
+                    {myPlayer && (
+                      <BrawlerAvatar
+                        id={myPlayer.brawler.id}
+                        name={myPlayer.brawler.name}
+                        power={myPlayer.brawler.power}
+                        size="md"
+                      />
+                    )}
 
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-cartoon text-sm text-white capitalize">
-                        {item.event.mode || battle.mode}
-                      </span>
-                      {item.event.map && (
-                        <span className="text-xs text-slate-300 font-medium">({item.event.map})</span>
-                      )}
-                      {isStarPlayer && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] flex items-center gap-1">
-                          <Star className="w-3 h-3 fill-[#070b16]" /> MVP
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-cartoon text-sm text-white capitalize">
+                          {item.event.mode || battle.mode}
                         </span>
-                      )}
+                        {item.event.map && (
+                          <span className="text-xs text-slate-300 font-medium">({item.event.map})</span>
+                        )}
+                        {isStarPlayer && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-cartoon bg-[#ffc700] text-[#070b16] border-2 border-[#070b16] shadow-[0_2px_0_#070b16] flex items-center gap-1 animate-pulse">
+                            <Star className="w-3 h-3 fill-[#070b16]" /> MVP
+                          </span>
+                        )}
+                      </div>
+                      <span className="font-bold text-xs text-slate-300 mt-0.5 block">
+                        {myPlayer ? myPlayer.brawler.name : 'Brawler'}
+                        {typeof battle.rank === 'number' ? ` • Rang #${battle.rank}` : ''}
+                      </span>
                     </div>
-                    <span className="font-bold text-xs text-slate-300 mt-0.5 block">
-                      {myPlayer ? myPlayer.brawler.name : 'Brawler'}
-                      {typeof battle.rank === 'number' ? ` • Rang #${battle.rank}` : ''}
-                    </span>
                   </div>
-                </div>
 
-                {/* Right: Trophy change + Win/Loss status */}
-                <div className="flex items-center gap-3 self-end sm:self-center">
-                  {typeof battle.trophyChange === 'number' && (
-                    <span
-                      className={`font-cartoon text-base text-stroke-sm ${
-                        battle.trophyChange > 0
-                          ? 'text-[#4ade80]'
-                          : battle.trophyChange < 0
-                          ? 'text-[#f87171]'
-                          : 'text-slate-300'
+                  {/* Right: Trophy change + Win/Loss status */}
+                  <div className="flex items-center gap-3 self-end sm:self-center">
+                    {typeof battle.trophyChange === 'number' && (
+                      <span
+                        className={`font-cartoon text-base text-stroke-sm ${
+                          battle.trophyChange > 0
+                            ? 'text-[#4ade80]'
+                            : battle.trophyChange < 0
+                            ? 'text-[#f87171]'
+                            : 'text-slate-300'
+                        }`}
+                      >
+                        {battle.trophyChange > 0 ? `+${battle.trophyChange}` : battle.trophyChange} 🏆
+                      </span>
+                    )}
+
+                    <div
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-[#070b16] shadow-[0_2px_0_#070b16] font-cartoon text-xs uppercase ${
+                        isWin ? 'bg-[#22c55e] text-[#070b16]' : 'bg-[#ef4444] text-white'
                       }`}
                     >
-                      {battle.trophyChange > 0 ? `+${battle.trophyChange}` : battle.trophyChange} 🏆
-                    </span>
-                  )}
-
-                  <div
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-[#070b16] shadow-[0_2px_0_#070b16] font-cartoon text-xs uppercase ${
-                      isWin ? 'bg-[#22c55e] text-[#070b16]' : 'bg-[#ef4444] text-white'
-                    }`}
-                  >
-                    {isWin ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 stroke-[2.5px]" />
-                        <span>Victoire</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-4 h-4 stroke-[2.5px]" />
-                        <span>Défaite</span>
-                      </>
-                    )}
+                      <m.div
+                        animate={!reduceMotion ? { scale: [1, 1.2, 1] } : undefined}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {isWin ? (
+                          <CheckCircle2 className="w-4 h-4 stroke-[2.5px]" />
+                        ) : (
+                          <XCircle className="w-4 h-4 stroke-[2.5px]" />
+                        )}
+                      </m.div>
+                      <span>{isWin ? 'Victoire' : 'Défaite'}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </StaggerItem>
             );
           })}
         </div>

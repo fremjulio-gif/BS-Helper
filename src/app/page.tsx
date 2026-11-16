@@ -9,9 +9,10 @@ import { TrophiesTab } from '@/components/tabs/TrophiesTab';
 import { MapsTab } from '@/components/tabs/MapsTab';
 import { BattleLogTab } from '@/components/tabs/BattleLogTab';
 import { CoachTab } from '@/components/tabs/CoachTab';
-import { CoachMascot } from '@/components/ui/CoachMascot';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TagModal } from '@/components/ui/TagModal';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
+import { SplashScreen } from '@/components/ui/SplashScreen';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { getTabDirection } from '@/lib/motion-tokens';
 import {
@@ -114,6 +115,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SplashScreen />
+
       <Navbar
         profile={profile}
         loading={loading}
@@ -141,17 +144,7 @@ export default function HomePage() {
         )}
 
         {loading && !profile ? (
-          <div className="flex flex-col items-center justify-center py-24 space-y-4">
-            <CoachMascot mood="pumped" size={96} className="animate-bounce" />
-            <div className="text-center">
-              <h3 className="font-cartoon text-xl text-white text-stroke-sm">
-                Synchronisation de Brawl Stars...
-              </h3>
-              <p className="text-xs text-slate-300 font-bold mt-1">
-                Coach Bitz analyse vos 25 derniers combats et vos maps
-              </p>
-            </div>
-          </div>
+          <DashboardSkeleton />
         ) : profile && battleSummary ? (
           <PageTransition currentTab={currentTab} direction={tabDirection}>
             {currentTab === 'overview' && (

@@ -16,6 +16,8 @@ import { Chip } from '../ui/Chip';
 import { ProgressBar } from '../ui/ProgressBar';
 import { CoachMascot, MascotMood } from '../ui/CoachMascot';
 import { soundManager } from '@/lib/sound-manager';
+import { m } from 'motion/react';
+import { springSnappy } from '@/lib/motion-tokens';
 import {
   Send,
   Sparkles,
@@ -183,8 +185,11 @@ ${
           {/* Messages feed */}
           <div className="flex-1 overflow-y-auto space-y-4 pr-1">
             {messages.map((msg, i) => (
-              <div
+              <m.div
                 key={i}
+                initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={springSnappy}
                 className={`flex items-start gap-3 ${
                   msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                 }`}
@@ -206,17 +211,37 @@ ${
                 >
                   <div className="whitespace-pre-wrap">{msg.text}</div>
                 </div>
-              </div>
+              </m.div>
             ))}
 
             {loading && (
-              <div className="flex items-center gap-3">
+              <m.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3"
+              >
                 <CoachMascot mood="pumped" size={40} />
-                <div className="bg-[#101736] px-4 py-2.5 rounded-2xl border-2 border-[#070b16] text-xs font-bold text-yellow-300 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#ffc700] animate-ping" />
-                  Coach Bitz calcule ta stratégie...
+                <div className="bg-[#101736] px-4 py-2.5 rounded-2xl border-2 border-[#070b16] text-xs font-bold text-yellow-300 flex items-center gap-2.5">
+                  <div className="flex items-center gap-1">
+                    <m.span
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity, delay: 0 }}
+                      className="w-2 h-2 rounded-full bg-[#ffc700] inline-block"
+                    />
+                    <m.span
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity, delay: 0.15 }}
+                      className="w-2 h-2 rounded-full bg-[#ffc700] inline-block"
+                    />
+                    <m.span
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.5, repeat: Infinity, delay: 0.3 }}
+                      className="w-2 h-2 rounded-full bg-[#ffc700] inline-block"
+                    />
+                  </div>
+                  <span>Coach Bitz réfléchit à ta stratégie...</span>
                 </div>
-              </div>
+              </m.div>
             )}
           </div>
 

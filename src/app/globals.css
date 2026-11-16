@@ -199,6 +199,12 @@ h1, h2, h3, .font-cartoon {
   background: #3b4b96;
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Accessibility: Prefers Reduced Motion Fallback */
 @media (prefers-reduced-motion: reduce) {
   *,

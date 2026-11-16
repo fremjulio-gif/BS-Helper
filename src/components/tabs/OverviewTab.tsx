@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   PlayerProfile,
   BattleLogSummary,
@@ -16,6 +16,10 @@ import { BrawlerAvatar } from '../ui/BrawlerAvatar';
 import { TrophyCounter } from '../ui/TrophyCounter';
 import { ProgressBar } from '../ui/ProgressBar';
 import { triggerTrophyConfetti } from '../ui/Confetti';
+import { StaggerItem } from '../motion/Stagger';
+import { useSettings } from '@/lib/settings-context';
+import { soundManager } from '@/lib/sound-manager';
+import { m } from 'motion/react';
 import {
   Trophy,
   Users,
@@ -62,8 +66,23 @@ export function OverviewTab({
   onGoToCoach,
   onGoToRush,
 }: OverviewTabProps) {
+  const { reduceMotion } = useSettings();
   const [period, setPeriod] = useState<'24h' | '7d' | 'all'>('all');
   const topTip = coachTips[0];
+
+  // Automatic celebration for new trophy record
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (profile.trophies >= profile.highestTrophies && profile.trophies > 1000) {
+      const recordKey = `bs_celebrated_record_${profile.highestTrophies}`;
+      if (!localStorage.getItem(recordKey)) {
+        localStorage.setItem(recordKey, 'true');
+        triggerTrophyConfetti();
+        soundManager.playRecord();
+      }
+    }
+  }, [profile.trophies, profile.highestTrophies]);
 
   const filterProgressionData = () => {
     if (progression.length <= 1) {
@@ -85,13 +104,18 @@ export function OverviewTab({
 
   const handleHeroCelebration = () => {
     triggerTrophyConfetti();
+    soundManager.playRecord();
   };
 
   return (
     <div className="space-y-6">
       {/* Tilt Warning Banner (if active) */}
       {lossReport?.tiltAlertActive && (
-        <div className="brawl-card p-4 bg-gradient-to-r from-[#45141d] to-[#250d14] border-3 border-[#ef4444] shadow-[0_4px_0_#070b16] flex items-center justify-between gap-4">
+        <m.div
+          animate={!reduceMotion ? { x: [-3, 3, -3, 3, 0] } : undefined}
+          transition={{ duration: 0.5 }}
+          className="brawl-card p-4 bg-gradient-to-r from-[#45141d] to-[#250d14] border-3 border-[#ef4444] shadow-[0_4px_0_#070b16] flex items-center justify-between gap-4"
+        >
           <div className="flex items-center gap-3">
             <CoachMascot mood="tilt" size={48} />
             <div>
@@ -110,7 +134,7 @@ export function OverviewTab({
           <Button variant="red" size="sm" onClick={onGoToCoach}>
             Conseils Anti-Tilt
           </Button>
-        </div>
+        </m.div>
       )}
 
       {/* Hero Action Banner with Coach Bitz Mascot */}
@@ -398,6 +422,14 @@ export function OverviewTab({
                 strokeWidth={4}
                 fillOpacity={1}
                 fill="url(#cartoonTrophyGrad)"
+                isAnimationActive={!reduceMotion}
+                animationDuration={700}
+                activeDot={{
+                  r: 6,
+                  stroke: '#ffea55',
+                  strokeWidth: 3,
+                  fill: '#070b16',
+                }}
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -426,31 +458,30 @@ export function OverviewTab({
             .slice()
             .sort((a, b) => b.trophies - a.trophies)
             .slice(0, 6)
-            .map((brawler) => (
-              <div
-                key={brawler.id}
-                className="brawl-card p-3 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform"
-              >
-                <BrawlerAvatar
-                  id={brawler.id}
-                  name={brawler.name}
-                  power={brawler.power}
-                  hasHypercharge={Boolean(brawler.hyperCharges && brawler.hyperCharges.length > 0)}
-                  size="md"
-                  className="mb-2"
-                />
-                <span className="font-cartoon text-xs text-white truncate max-w-full">
-                  {brawler.name}
-                </span>
-                <span className="font-cartoon text-xs text-[#ffc700] mt-0.5">
-                  {brawler.trophies} 🏆
-                </span>
-                {brawler.currentWinStreak && brawler.currentWinStreak > 0 ? (
-                  <span className="text-[10px] text-[#4ade80] font-black mt-1 bg-[#22c55e]/15 px-1.5 py-0.2 rounded border border-[#22c55e]/30">
-                    🔥 {brawler.currentWinStreak} win streak
+            .map((brawler, index) => (
+              <StaggerItem key={brawler.id} index={index}>
+                <div className="brawl-card p-3 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+                  <BrawlerAvatar
+                    id={brawler.id}
+                    name={brawler.name}
+                    power={brawler.power}
+                    hasHypercharge={Boolean(brawler.hyperCharges && brawler.hyperCharges.length > 0)}
+                    size="md"
+                    className="mb-2"
+                  />
+                  <span className="font-cartoon text-xs text-white truncate max-w-full">
+                    {brawler.name}
                   </span>
-                ) : null}
-              </div>
+                  <span className="font-cartoon text-xs text-[#ffc700] mt-0.5">
+                    {brawler.trophies} 🏆
+                  </span>
+                  {brawler.currentWinStreak && brawler.currentWinStreak > 0 ? (
+                    <span className="text-[10px] text-[#4ade80] font-black mt-1 bg-[#22c55e]/15 px-1.5 py-0.2 rounded border border-[#22c55e]/30">
+                      🔥 {brawler.currentWinStreak} win streak
+                    </span>
+                  ) : null}
+                </div>
+              </StaggerItem>
             ))}
         </div>
       </Card>
