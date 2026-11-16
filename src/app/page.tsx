@@ -12,6 +12,8 @@ import { CoachTab } from '@/components/tabs/CoachTab';
 import { CoachMascot } from '@/components/ui/CoachMascot';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TagModal } from '@/components/ui/TagModal';
+import { PageTransition } from '@/components/motion/PageTransition';
+import { getTabDirection } from '@/lib/motion-tokens';
 import {
   PlayerProfile,
   StrategyRecommendation,
@@ -28,6 +30,7 @@ import {
 
 export default function HomePage() {
   const [currentTab, setCurrentTab] = useState<TabType>('overview');
+  const [tabDirection, setTabDirection] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -102,6 +105,13 @@ export default function HomePage() {
     loadData(newTag);
   };
 
+  const handleTabChange = (newTab: TabType) => {
+    if (newTab !== currentTab) {
+      setTabDirection(getTabDirection(currentTab, newTab));
+      setCurrentTab(newTab);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar
@@ -115,7 +125,7 @@ export default function HomePage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-12">
         <DesktopNav
           currentTab={currentTab}
-          onChangeTab={setCurrentTab}
+          onChangeTab={handleTabChange}
           easyCount={easyTrophies.length}
         />
 
@@ -143,7 +153,7 @@ export default function HomePage() {
             </div>
           </div>
         ) : profile && battleSummary ? (
-          <div>
+          <PageTransition currentTab={currentTab} direction={tabDirection}>
             {currentTab === 'overview' && (
               <OverviewTab
                 profile={profile}
@@ -153,8 +163,8 @@ export default function HomePage() {
                 sessionObjectives={sessionObjectives}
                 milestoneRoad={milestoneRoad}
                 lossReport={lossReport}
-                onGoToCoach={() => setCurrentTab('coach')}
-                onGoToRush={() => setCurrentTab('trophies')}
+                onGoToCoach={() => handleTabChange('coach')}
+                onGoToRush={() => handleTabChange('trophies')}
               />
             )}
 
@@ -183,14 +193,14 @@ export default function HomePage() {
                 milestoneRoad={milestoneRoad}
               />
             )}
-          </div>
+          </PageTransition>
         ) : null}
       </main>
 
       {/* Mobile Bottom Navigation */}
       <BottomNav
         currentTab={currentTab}
-        onChangeTab={setCurrentTab}
+        onChangeTab={handleTabChange}
         easyCount={easyTrophies.length}
       />
 

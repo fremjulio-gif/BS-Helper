@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import { Pressable } from '@/components/motion/Pressable';
+import { useSettings } from '@/lib/settings-context';
 import { soundManager } from '@/lib/sound-manager';
 
 interface ChipProps {
@@ -22,6 +24,8 @@ export function Chip({
   tone = 'yellow',
   className = '',
 }: ChipProps) {
+  const { sound } = useSettings();
+
   const activeStyles = {
     yellow: 'bg-gradient-to-b from-[#ffdc2e] to-[#ffaa00] text-[#070b16] border-[#070b16] shadow-[0_4px_0_#070b16]',
     cyan: 'bg-gradient-to-b from-[#42eeff] to-[#00b8db] text-[#070b16] border-[#070b16] shadow-[0_4px_0_#070b16]',
@@ -33,14 +37,16 @@ export function Chip({
     'bg-[#121838] hover:bg-[#1a234f] text-slate-300 border-2 border-[#070b16] shadow-[0_3px_0_#070b16]';
 
   const handleClick = () => {
-    soundManager.playTap();
+    if (sound) {
+      soundManager.playTap();
+    }
     onClick();
   };
 
   return (
-    <button
+    <Pressable
       onClick={handleClick}
-      className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-cartoon tracking-wide uppercase transition-all duration-75 flex items-center justify-center gap-2 cursor-pointer active:translate-y-1 ${
+      className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-cartoon tracking-wide uppercase flex items-center justify-center gap-2 cursor-pointer ${
         active ? activeStyles : inactiveStyle
       } ${className}`}
     >
@@ -55,6 +61,6 @@ export function Chip({
           {count}
         </span>
       )}
-    </button>
+    </Pressable>
   );
 }
